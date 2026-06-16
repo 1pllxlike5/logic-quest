@@ -997,9 +997,118 @@ body::before {
   #main-content { margin-left: 200px; }
   #sidebar .nav-item { padding: 10px 16px; font-size: 0.85rem; }
 }
+
+/* ========== AUTH OVERLAY ========== */
+.auth-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;
+  background: rgba(5, 5, 15, 0.85); backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  animation: authFadeIn 0.5s ease;
+  transition: opacity 0.4s ease;
+}
+.auth-overlay.hidden {
+  opacity: 0; pointer-events: none;
+}
+@keyframes authFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes authShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.auth-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(123, 47, 247, 0.3);
+  border-radius: 16px; padding: 36px 32px;
+  width: 380px; max-width: 92vw;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(123, 47, 247, 0.15), 0 0 80px rgba(0, 245, 212, 0.05);
+  transition: all 0.3s ease;
+}
+.auth-logo {
+  font-size: 1.8rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 4px;
+}
+.auth-subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 28px; }
+.auth-input-group {
+  text-align: left; margin-bottom: 18px;
+}
+.auth-input-group label {
+  display: block; margin-bottom: 6px; font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.auth-input-group input {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  background: var(--bg-primary); color: var(--text-primary);
+  border: 1px solid rgba(0, 245, 212, 0.15);
+  font-size: 0.95rem; font-family: var(--font-sans);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.auth-input-group input:focus {
+  outline: none; border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 245, 212, 0.15);
+}
+.auth-error {
+  color: var(--color-wrong); font-size: 0.82rem;
+  margin-bottom: 12px; text-align: center;
+  animation: authShake 0.4s ease;
+}
+.auth-submit-btn {
+  width: 100%; padding: 12px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent-purple), #5a1dc7);
+  color: #fff; font-size: 1rem; font-weight: 700;
+  cursor: pointer; border: none;
+  transition: all 0.3s ease; margin-bottom: 16px;
+  font-family: var(--font-sans);
+}
+.auth-submit-btn:hover {
+  box-shadow: 0 0 24px rgba(123, 47, 247, 0.5);
+  transform: translateY(-1px);
+}
+.auth-switch { color: var(--text-muted); font-size: 0.85rem; }
+.auth-switch a { color: var(--accent-cyan); cursor: pointer; }
+.auth-switch a:hover { text-decoration: underline; }
+
+/* Topbar user area */
+.topbar-user {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.85rem; color: var(--accent-cyan);
+  cursor: pointer; padding: 4px 10px;
+  border-radius: 8px; transition: all 0.3s ease;
+  border: 1px solid rgba(0, 245, 212, 0.15);
+}
+.topbar-user:hover {
+  background: rgba(0, 245, 212, 0.08);
+  border-color: var(--accent-cyan);
+}
 </style>
 </head>
 <body>
+
+<!-- ========== AUTH OVERLAY ========== -->
+<div id="auth-overlay" class="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-logo">⚡ LogicQuest</div>
+    <div class="auth-subtitle">数字逻辑刷题</div>
+    <div class="auth-input-group">
+      <label>👤 用户名</label>
+      <input id="auth-username" type="text" placeholder="输入用户名" autocomplete="username">
+    </div>
+    <div class="auth-input-group">
+      <label>🔒 密码</label>
+      <input id="auth-password" type="password" placeholder="输入密码" autocomplete="current-password">
+    </div>
+    <div id="auth-error" class="auth-error" style="display:none"></div>
+    <button id="auth-submit" class="auth-submit-btn">登 录</button>
+    <div class="auth-switch">
+      没有账号？<a id="auth-switch-link" href="#">立即注册</a>
+    </div>
+  </div>
+</div>
 
 <!-- ========== TOP BAR ========== -->
 <header id="topbar">
@@ -1009,6 +1118,7 @@ body::before {
     <div class="stat-item">🪙 <span class="val" id="coins-display">0</span></div>
     <div class="stat-item">🔥 <span class="val" id="streak-display">0</span> 天连续</div>
     <div class="stat-item">📊 <span class="val" id="level-display">Lv.1</span></div>
+    <span class="topbar-user" id="topbar-user-display" onclick="logoutUser()" title="退出登录" style="display:none;"></span>
   </div>
 </header>
 
@@ -1357,8 +1467,203 @@ function saveLevelProgress(levelId, stars, score) {
   saveState();
 }
 
+// ==================== AUTH ====================
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function getStorageKey(username) {
+  return `logicquest_${username}_v1`;
+}
+
+function getAccounts() {
+  try {
+    const raw = localStorage.getItem('logicquest_accounts');
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+function saveAccounts(accounts) {
+  localStorage.setItem('logicquest_accounts', JSON.stringify(accounts));
+}
+
+function validateUsername(username) {
+  // Allow alphanumeric, Chinese chars, 2-20 chars, trimmed
+  const trimmed = username.trim();
+  if (trimmed.length < 2 || trimmed.length > 20) return null;
+  if (!/^[\w一-鿿]+$/.test(trimmed)) return null;
+  return trimmed;
+}
+
+let currentUser = null;
+let authMode = 'login'; // 'login' or 'register'
+
+function switchToRegister() {
+  authMode = 'register';
+  document.getElementById('auth-submit').textContent = '注 册';
+  document.querySelector('.auth-card .auth-subtitle').textContent = '创建新账号';
+  document.getElementById('auth-switch-link').textContent = '已有账号？立即登录';
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-username').value = '';
+  document.getElementById('auth-password').value = '';
+}
+
+function switchToLogin() {
+  authMode = 'login';
+  document.getElementById('auth-submit').textContent = '登 录';
+  document.querySelector('.auth-card .auth-subtitle').textContent = '数字逻辑刷题';
+  document.getElementById('auth-switch-link').textContent = '没有账号？立即注册';
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-username').value = '';
+  document.getElementById('auth-password').value = '';
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+  // Re-trigger shake animation
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'authShake 0.4s ease';
+}
+
+async function handleAuthSubmit() {
+  const usernameInput = document.getElementById('auth-username').value;
+  const password = document.getElementById('auth-password').value;
+
+  if (!usernameInput.trim() || !password) {
+    showAuthError('请输入用户名和密码');
+    return;
+  }
+
+  const username = validateUsername(usernameInput);
+  if (!username) {
+    showAuthError('用户名格式不正确（2-20位，支持字母、数字、中文）');
+    return;
+  }
+
+  const accounts = getAccounts();
+  const passwordHash = await hashPassword(password);
+
+  if (authMode === 'register') {
+    // Check if username exists (case-insensitive)
+    const existingKey = Object.keys(accounts).find(k => k.toLowerCase() === username.toLowerCase());
+    if (existingKey) {
+      showAuthError('用户名已存在');
+      return;
+    }
+    registerUser(username, passwordHash);
+  } else {
+    // Login
+    const existingKey = Object.keys(accounts).find(k => k.toLowerCase() === username.toLowerCase());
+    if (!existingKey) {
+      showAuthError('用户不存在');
+      return;
+    }
+    if (accounts[existingKey].passwordHash !== passwordHash) {
+      showAuthError('密码错误');
+      return;
+    }
+    loginUser(existingKey);
+  }
+}
+
+function registerUser(username, passwordHash) {
+  const accounts = getAccounts();
+  accounts[username] = { passwordHash, createdAt: new Date().toISOString() };
+  saveAccounts(accounts);
+
+  // Create empty state for new user
+  const key = getStorageKey(username);
+  try {
+    localStorage.setItem(key, JSON.stringify(getDefaultState()));
+  } catch(e) {}
+
+  // Migrate old data if exists
+  migrateOldDataIfExists(username);
+
+  currentUser = username;
+  hideAuthOverlay();
+  initAppAfterLogin();
+}
+
+function loginUser(username) {
+  currentUser = username;
+
+  // Migrate old data if exists
+  migrateOldDataIfExists(username);
+
+  hideAuthOverlay();
+  initAppAfterLogin();
+}
+
+function migrateOldDataIfExists(username) {
+  const userKey = getStorageKey(username);
+  const oldKey = 'logicquest_v1';
+  try {
+    const oldData = localStorage.getItem(oldKey);
+    const userData = localStorage.getItem(userKey);
+    if (oldData && !userData) {
+      // Migrate: move old data to user key
+      localStorage.setItem(userKey, oldData);
+      localStorage.removeItem(oldKey);
+    }
+  } catch(e) {}
+}
+
+function hideAuthOverlay() {
+  const overlay = document.getElementById('auth-overlay');
+  overlay.classList.add('hidden');
+  setTimeout(() => {
+    overlay.style.display = 'none';
+  }, 400);
+}
+
+function showAuthOverlay() {
+  const overlay = document.getElementById('auth-overlay');
+  overlay.style.display = 'flex';
+  overlay.classList.remove('hidden');
+  switchToLogin();
+  document.getElementById('auth-username').value = '';
+  document.getElementById('auth-password').value = '';
+}
+
+function logoutUser() {
+  if (!currentUser) return;
+  if (!confirm('确定要退出登录吗？\n\n当前进度已自动保存。')) return;
+
+  // Save current state
+  saveState();
+
+  // Clear current session
+  clearInterval(extremeTimerInterval);
+  clearInterval(levelTimerInterval);
+  clearInterval(examTimerInterval);
+  currentSession = null;
+
+  currentUser = null;
+  showAuthOverlay();
+  document.getElementById('main-content').innerHTML = '';
+  document.getElementById("coins-display").textContent = "0";
+  document.getElementById("streak-display").textContent = "0";
+  document.getElementById("level-display").textContent = "Lv.1";
+  document.getElementById("topbar-user-display").style.display = "none";
+}
+
+function initAppAfterLogin() {
+  initStorage();
+  initSkin();
+  updateTopbar();
+  document.getElementById("topbar-user-display").style.display = "flex";
+  document.getElementById("topbar-user-display").textContent = '👤 ' + currentUser + ' ▼';
+  navigateTo("home");
+}
+
 // ==================== STORAGE ====================
-const STORAGE_KEY = "logicquest_v1";
 
 function getDefaultState() {
   return {
@@ -1401,8 +1706,9 @@ function getDefaultState() {
 let appState = getDefaultState();
 
 function initStorage() {
+  const storageKey = currentUser ? getStorageKey(currentUser) : 'logicquest_v1';
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       const parsed = JSON.parse(saved);
       appState = Object.assign(getDefaultState(), parsed);
@@ -1434,8 +1740,9 @@ function resetDailyTasksIfNewDay() {
 }
 
 function saveState() {
+  const storageKey = currentUser ? getStorageKey(currentUser) : 'logicquest_v1';
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    localStorage.setItem(storageKey, JSON.stringify(appState));
   } catch(e) {
     console.warn("Failed to save state.", e);
   }
@@ -4594,6 +4901,13 @@ function updateTopbar() {
       titleDisplay.style.display = "none";
     }
   }
+
+  // Update user display
+  const userDisplay = document.getElementById("topbar-user-display");
+  if (userDisplay && currentUser) {
+    userDisplay.style.display = "flex";
+    userDisplay.textContent = '👤 ' + currentUser + ' ▼';
+  }
 }
 
 // ==================== MOBILE "MORE" MENU ====================
@@ -4632,10 +4946,26 @@ function closeModal() {
 
 // ==================== EVENT LISTENERS ====================
 document.addEventListener("DOMContentLoaded", () => {
-  initStorage();
-  initSkin();
-  updateTopbar();
-  navigateTo("home");
+  // Wire auth events
+  document.getElementById("auth-submit").addEventListener("click", handleAuthSubmit);
+  document.getElementById("auth-switch-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    if (authMode === 'login') {
+      switchToRegister();
+    } else {
+      switchToLogin();
+    }
+  });
+  // Enter key to submit
+  document.getElementById("auth-password").addEventListener("keydown", (e) => {
+    if (e.key === 'Enter') handleAuthSubmit();
+  });
+  document.getElementById("auth-username").addEventListener("keydown", (e) => {
+    if (e.key === 'Enter') document.getElementById("auth-password").focus();
+  });
+
+  // Show auth overlay on load
+  showAuthOverlay();
 
   // Sidebar clicks
   document.querySelectorAll("#sidebar .nav-item").forEach(item => {
