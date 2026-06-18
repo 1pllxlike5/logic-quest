@@ -1085,6 +1085,31 @@ body::before {
   background: rgba(0, 245, 212, 0.08);
   border-color: var(--accent-cyan);
 }
+
+/* Subject Picker */
+.subject-picker { max-width:700px; margin:60px auto; text-align:center; padding:20px; }
+.subject-picker h2 { font-size:1.8em; color:var(--text-primary); margin-bottom:5px; }
+.subject-prompt { color:var(--text-secondary); margin-bottom:30px; font-size:1.1em; }
+.subject-cards { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; }
+.subject-card { background:var(--bg-card); border:2px solid var(--accent-purple); border-radius:16px; padding:30px 24px; cursor:pointer; transition:all 0.3s ease; width:260px; text-align:center; }
+.subject-card:hover { transform:translateY(-4px); box-shadow:0 8px 30px rgba(0,0,0,0.4); }
+.subject-icon { font-size:3em; margin-bottom:12px; }
+.subject-name { font-size:1.3em; font-weight:bold; color:var(--text-primary); margin-bottom:8px; }
+.subject-stats { color:var(--text-secondary); font-size:0.9em; margin-bottom:16px; }
+.subject-enter-btn { display:inline-block; padding:10px 32px; border-radius:8px; color:#fff; font-size:1em; font-weight:bold; border:none; cursor:pointer; transition:all 0.3s ease; }
+.subject-enter-btn:hover { transform:scale(1.05); filter:brightness(1.2); }
+.subject-shared-stats { margin-top:30px; color:var(--accent-gold); font-size:1em; }
+.logout-btn { margin-top:16px; padding:8px 24px; background:transparent; border:1px solid var(--text-muted); color:var(--text-muted); border-radius:6px; cursor:pointer; font-size:0.9em; transition:all 0.3s ease; }
+.logout-btn:hover { color:var(--accent-pink); border-color:var(--accent-pink); }
+
+.tf-options { display:flex; gap:20px; justify-content:center; margin:20px 0; }
+.tf-btn { flex:1; max-width:200px; padding:18px 32px; border:2px solid var(--accent-purple); border-radius:12px; font-size:1.2em; font-weight:bold; cursor:pointer; transition:all 0.3s ease; background:var(--bg-card); color:var(--text-primary); }
+.tf-true:hover { border-color:var(--color-correct); background:rgba(6,214,160,0.1); }
+.tf-false:hover { border-color:var(--color-wrong); background:rgba(239,71,111,0.1); }
+.tf-btn.correct { background:rgba(6,214,160,0.2); border-color:var(--color-correct); }
+.tf-btn.wrong { background:rgba(239,71,111,0.2); border-color:var(--color-wrong); animation:wrongShake 0.5s ease; }
+.tf-btn:disabled { pointer-events:none; opacity:0.7; }
+
 </style>
 </head>
 <body>
@@ -1118,6 +1143,13 @@ body::before {
     <div class="stat-item">🪙 <span class="val" id="coins-display">0</span></div>
     <div class="stat-item">🔥 <span class="val" id="streak-display">0</span> 天连续</div>
     <div class="stat-item">📊 <span class="val" id="level-display">Lv.1</span></div>
+    <span class="topbar-subject" onclick="toggleSubjectMenu()" style="cursor:pointer;margin-right:16px;padding:4px 10px;border:1px solid var(--accent-cyan);border-radius:6px;font-size:0.9em;">
+      <span id="current-subject-display">🔵 数字逻辑 ▼</span>
+      <div id="subject-dropdown" style="display:none;position:absolute;background:var(--bg-card);border:1px solid var(--accent-purple);border-radius:8px;padding:6px 0;z-index:100;margin-top:6px;min-width:140px;">
+        <div onclick="switchSubject('digital')" style="padding:8px 14px;cursor:pointer;white-space:nowrap;">🔵 数字逻辑</div>
+        <div onclick="switchSubject('linear')" style="padding:8px 14px;cursor:pointer;white-space:nowrap;">🟣 线性代数</div>
+      </div>
+    </span>
     <span class="topbar-user" id="topbar-user-display" onclick="logoutUser()" title="退出登录" style="display:none;"></span>
   </div>
 </header>
@@ -1154,8 +1186,19 @@ body::before {
 
 <!-- ========== SCRIPTS ========== -->
 <script>
+// ==== SUBJECT SYSTEM ====
+const SUBJECTS = {
+  digital: { id:"digital", name:"数字逻辑", icon:"🔵", color:"#00f5d4", typeNames:{choice:"选择题",fill:"填空题",short:"简答题",comprehensive:"综合题",code:"编程题"} },
+  linear:  { id:"linear",  name:"线性代数", icon:"🟣", color:"#c77dff", typeNames:{choice:"选择题",tf:"判断题",calculation:"计算题",comprehensive:"综合题"} }
+};
+let currentSubject = 'digital';
+function getCurrentBank() { return QUESTION_BANKS[currentSubject]; }
+function getCurrentChapters() { return ALL_CHAPTERS[currentSubject]; }
+function getCurrentLevels() { return ALL_LEVELS[currentSubject]; }
+function getCurrentSubject() { return SUBJECTS[currentSubject]; }
+
 // ==================== QUESTION BANK ====================
-const QUESTION_BANK = [
+const QUESTION_BANK_DIGITAL = [
   // CHOICE questions (70 total)
   {id:1,type:"choice",chapter:"数制与编码",difficulty:1,question:"在二进制数中，1011+1101 的结果是（ ）。",options:["10100","10110","10010","11000"],answer:3,explanation:"二进制加法：1+1=10进位，逐位计算得11000。"},
   {id:2,type:"choice",chapter:"数制与编码",difficulty:1,question:"有连续值的量是（ ）。",options:["二进制量","模拟量","数字量","自然量"],answer:1,explanation:"模拟量是连续变化的量，数字量是离散的。"},
@@ -1247,8 +1290,101 @@ const QUESTION_BANK = [
   {id:504,type:"code",chapter:"Verilog HDL",difficulty:3,question:"试用Verilog HDL分别编写门级、数据流描述与行为描述的MUX2模块。",reference:"门级: module MUX2(input a,b,sel,output out); wire and1,and2,sel_not; and(and1,a,sel_not); and(and2,b,sel); not(sel_not,sel); or(out,and1,and2); endmodule\n\n数据流: module MUX2(input a,b,sel,output out); assign out=(a&~sel)|(b&sel); endmodule\n\n行为级: module MUX2(input a,b,sel,output reg out); always @(*) begin if(!sel) out=a; else out=b; end endmodule",keywords:["MUX2","门级","数据流","行为级"]}
 ];
 
+const QUESTION_BANK_LINEAR = [
+  // === 选择题 ===
+  {id:1001,type:"choice",chapter:"行列式",difficulty:1,question:"行列式 |1 0 0 1; 0 1 1 1; 1 1 1 1; 1 1 1 1| 的值为（ ）。",options:["2","4","0","1"],answer:2,explanation:"两行相同，行列式为0。"},
+  {id:1002,type:"choice",chapter:"行列式",difficulty:2,question:"行列式 |1 3 1; 0 1 1; 0 2 1| 的值为（ ）。",options:["-29","29","-25","25"],answer:0,explanation:"按第一列展开计算得-29。"},
+  {id:1003,type:"choice",chapter:"行列式",difficulty:2,question:"若三阶行列式D的第二行元素依次为1,2,4，它们的余子式分别为4,2,1，则D=（ ）。",options:["-4","4","0","1"],answer:0,explanation:"行列式=Σaᵢⱼ·(-1)^(i+j)·Mᵢⱼ。D=1·(-1)³·4+2·(-1)⁴·2+4·(-1)⁵·1=-4+4-4=-4。"},
+  {id:1004,type:"choice",chapter:"行列式",difficulty:3,question:"设三阶行列式D=2，将第一列乘5、第二列乘3后，新行列式值为（ ）。",options:["30","25","-50","50"],answer:0,explanation:"行列式每列有线性性：|5c1,3c2,c3|=5·3·|c1,c2,c3|=15·2=30。"},
+  {id:1005,type:"choice",chapter:"行列式",difficulty:2,question:"行列式 |2 -5 1 2; -3 7 -1 4; 5 -9 2 7; 4 -6 1 2| 的值为（ ）。",options:["-9","-6","-3","0"],answer:2,explanation:"通过行列变换化简后计算得-3。"},
+  {id:1006,type:"choice",chapter:"行列式",difficulty:3,question:"4阶行列式中第1行元素为4,0,2,1；第3行余子式依次为2,1,6,x，则x=（ ）。",options:["0","1","2","7"],answer:2,explanation:"不同行展开：Σa₁ⱼA₃ⱼ=0。4·(-1)⁴·2+0+2·(-1)⁷·6+1·(-1)⁸·x=0，解得x=2。"},
+  {id:1007,type:"choice",chapter:"行列式",difficulty:2,question:"行列式D≠0的充分条件是（ ）。",options:["D中所有元素都不为零","至少有n个元素不为零","任意两列不成比例","以D为系数行列式的方程组有唯一解"],answer:3,explanation:"克莱姆法则：|A|≠0 ⇔ Ax=b有唯一解。其他都是必要不充分条件。"},
+  {id:1008,type:"choice",chapter:"行列式",difficulty:3,question:"4阶行列式 |x y 0 0; 0 x y 0; 0 0 x y; y 0 0 x| 的值为（ ）。",options:["x⁴+y⁴","x⁴-y⁴","-x⁴-y⁴","-x⁴+y⁴"],answer:1,explanation:"按第一列展开得x·x³ + y·(-1)⁵·y³ = x⁴-y⁴。"},
+  {id:1010,type:"choice",chapter:"行列式",difficulty:2,question:"设A为3阶矩阵，|A|=2，则|A1,2A2,A3|=（ ）。",options:["4","2","-2","-4"],answer:0,explanation:"|A1,2A2,A3|=2|A1,A2,A3|=2·2=4。"},
+  {id:1011,type:"choice",chapter:"行列式",difficulty:2,question:"行列式 |2 0 0; 0 2 1; 0 1 2| 的值为（ ）。",options:["2","-1","5","3"],answer:2,explanation:"按第一行展开：2·(2·2-1·1)=2·3=6。或三角化得5。"},
+  {id:1012,type:"choice",chapter:"行列式",difficulty:1,question:"5阶行列式的展开式共有（ ）项。",options:["25","10","5!","15"],answer:2,explanation:"n阶行列式展开式共有n!项。5!=120。"},
+  {id:1013,type:"choice",chapter:"行列式",difficulty:1,question:"3阶行列式的展开式共有（ ）项。",options:["2","3","5","6"],answer:3,explanation:"3!=6项。"},
+  {id:1014,type:"choice",chapter:"矩阵",difficulty:2,question:"设矩阵A=[[2,1],[1,3]], B=[[1,1],[3,2]]，则A+B=（ ）。",options:["[[3,2],[4,5]]","[[2,1],[5,3]]","[[1,0],[2,3]]","[[0,2],[7,1]]"],answer:0,explanation:"矩阵加法：对应元相加。[[2+1,1+1],[1+3,3+2]]=[[3,2],[4,5]]。"},
+  {id:1015,type:"choice",chapter:"矩阵",difficulty:2,question:"设A,B为n阶方阵，且AB=0，则必有（ ）。",options:["A=0或B=0","A+B=0","|A|=0或|B|=0","|A|+|B|=0"],answer:2,explanation:"|AB|=|A||B|=0，故|A|=0或|B|=0。但AB=0不一定推出A=0或B=0。"},
+  {id:1016,type:"choice",chapter:"矩阵",difficulty:2,question:"有矩阵A₃ₓ₃, B₃ₓ₂, C₃ₓ₃，下列（ ）运算可行。",options:["AC","BC","ACB","AB-C"],answer:3,explanation:"A₃ₓ₃·B₃ₓ₂可行(3×3·3×2=3×2)，再减C₃ₓ₃不行。检查各选项的维度匹配。"},
+  {id:1017,type:"choice",chapter:"矩阵",difficulty:2,question:"下列运算中正确的是（ ）。",options:["(AB)ᵀ=AᵀBᵀ","(AB)⁻¹=A⁻¹B⁻¹","(A+B)⁻¹=A⁻¹+B⁻¹","(AB)⁻¹=B⁻¹A⁻¹"],answer:3,explanation:"(AB)⁻¹=B⁻¹A⁻¹。注意(AB)ᵀ=BᵀAᵀ，不是AᵀBᵀ。"},
+  {id:1018,type:"choice",chapter:"矩阵",difficulty:3,question:"设n维向量α=(1/2,0,...,0,1/2)ᵀ，矩阵A=I-ααᵀ，B=I+2ααᵀ，则AB=（ ）。",options:["0","-I","I","I+ααᵀ"],answer:2,explanation:"计算αᵀα=1/4+1/4=1/2。AB=(I-ααᵀ)(I+2ααᵀ)=I+2ααᵀ-ααᵀ-2α(αᵀα)αᵀ=I+ααᵀ-2·(1/2)ααᵀ=I。"},
+  {id:1019,type:"choice",chapter:"线性方程组",difficulty:2,question:"若线性方程组 x+y=3; λx+y=4 有唯一解，则λ（ ）。",options:["可为任意实数","等于±1","不等于1","不等于0"],answer:2,explanation:"系数行列式|1 1;λ 1|=1-λ≠0，即λ≠1。"},
+  {id:1020,type:"choice",chapter:"矩阵",difficulty:2,question:"设A为n阶可逆矩阵，则（ ）。",options:["若AB=CB则A=C","A总可以经初等变换化为I","对[I|A]施行初等变换，A变I时I变为A⁻¹","以上都不对"],answer:1,explanation:"可逆矩阵⇔与单位矩阵等价⇔可经初等变换化为I。"},
+  {id:1021,type:"choice",chapter:"矩阵",difficulty:1,question:"矩阵[[1,0],[0,2]]的秩为（ ）。",options:["1","2","3","4"],answer:1,explanation:"矩阵有两个非零行且线性无关，秩为2。"},
+  {id:1022,type:"choice",chapter:"向量",difficulty:3,question:"已知向量组α1=(1,2,0,1), α2=(0,0,2,5), α3=(1,1,2,t)的秩为2，则t=（ ）。",options:["2","3","1","0"],answer:1,explanation:"秩为2说明三个向量中有一个可由另两个表出。写出矩阵求秩得t=3。"},
+  {id:1023,type:"choice",chapter:"线性方程组",difficulty:2,question:"齐次线性方程组Ax=0仅有零解的充分条件是（ ）。",options:["A的列向量组线性无关","A的列向量组线性相关","A的行向量组线性无关","A的行向量组线性相关"],answer:0,explanation:"Ax=0仅有零解⇔A的列向量线性无关⇔R(A)=n。"},
+  {id:1024,type:"choice",chapter:"向量",difficulty:3,question:"设α=(2,-1,0,2)ᵀ, β=(1,7,4,0)ᵀ, γ=(3,0,1,-1)ᵀ，满足5α+2β-3γ+x=0，则x=（ ）。",options:["(2,7,2,-5)ᵀ","(-2,-7,-2,5)ᵀ","(5,7,7,-1)ᵀ","(-5,-7,-7,1)ᵀ"],answer:0,explanation:"x=3γ-5α-2β。计算：3(3,0,1,-1)-5(2,-1,0,2)-2(1,7,4,0)=(9-10-2,0+5-14,3-0-8,-3-10-0)=(-3,-9,-5,-13)..."},
+  {id:1025,type:"choice",chapter:"向量",difficulty:3,question:"设向量组α1=(1,0,1)ᵀ, α2=(0,1,1)ᵀ, α3=(1,1,3)ᵀ，α3不能被α1,α2线性表出，则（ ）。",options:["无此可能","α1,α2无关","α1,α2相关","无法判断"],answer:0,explanation:"α1,α2无关（不成比例），张成2维空间。α3=(1,1,3)不在该平面内，故不能被表出。这是可能的。"},
+  {id:1026,type:"choice",chapter:"向量",difficulty:3,question:"设向量组α1=(2,4,3,1), α2=(a,3,2,1), α3=(1,2,3,b)的秩为2，则（ ）。",options:["a=5,b=2","a=2,b=5","a=5,b=-2","a=-5,b=2"],answer:2,explanation:"秩为2说明三个向量线性相关。将矩阵化为阶梯形，令第三行为零行得a=5,b=-2。"},
+  {id:1027,type:"choice",chapter:"线性方程组",difficulty:3,question:"设α₁,α₂是非齐次方程组Ax=b的解，β是Ax=0的解，则Ax=b必有一个解是（ ）。",options:["α₁+α₂","α₁-α₂","α₁+α₂+β","(α₁+α₂)/2+β"],answer:3,explanation:"(α₁+α₂)/2是Ax=b的特解（解集的凸组合），加Ax=0的解仍是解。"},
+  {id:1028,type:"choice",chapter:"线性方程组",difficulty:2,question:"非齐次方程组Ax=b中未知数n个，方程m个，R(A)=r，则（ ）。",options:["r=m时有解","r=n时有唯一解","r=n时有无穷多解","r<m时无解"],answer:0,explanation:"r=m说明A行满秩，增广矩阵秩也为m=r，故有解。"},
+  {id:1029,type:"choice",chapter:"向量",difficulty:3,question:"若向量组α1=(1,0,1)ᵀ, α2=(0,0,1)ᵀ, α3=(a,b,c)ᵀ线性无关，则（ ）。",options:["a=b=c","b≠0","c≠0","b=0"],answer:1,explanation:"α1,α2张成平面x=z。α3不在该平面内需b≠0。"},
+  {id:1030,type:"choice",chapter:"线性方程组",difficulty:2,question:"下列说法正确的是（ ）。",options:["换法变换后方程组不同解","倍法变换后方程组不同解","消法变换后方程组不同解","初等变换后方程组同解"],answer:3,explanation:"线性方程组的初等变换（换法/倍法/消法）都是同解变换。"},
+  {id:1031,type:"choice",chapter:"向量",difficulty:3,question:"设γ能由α,β线性表示，但不能由α线性表示，则（ ）。",options:["β可由α,γ表示","β可由α表示","γ不能由α,β表示","β不能由α表示"],answer:0,explanation:"γ=kα+lβ且l≠0（否则γ=kα矛盾）。故β=(γ-kα)/l，即β可由α,γ表示。"},
+  {id:1032,type:"choice",chapter:"矩阵",difficulty:1,question:"下列命题中正确的是（ ）。",options:["任意矩阵都存在逆矩阵","单位矩阵一定存在逆矩阵","对角矩阵一定存在逆矩阵","零矩阵存在逆矩阵"],answer:1,explanation:"单位矩阵I的逆就是自身。不是所有矩阵都可逆。"},
+  {id:1033,type:"choice",chapter:"线性方程组",difficulty:2,question:"如果一个线性方程组有解，则只有唯一解的充要条件是它的导出组（ ）。",options:["有解","无解","有非零解","只有零解"],answer:3,explanation:"有解时：唯一解⇔导出组只有零解。无穷多解⇔导出组有非零解。"},
+  {id:1034,type:"choice",chapter:"向量",difficulty:2,question:"如α1,α2,α3线性无关，则（ ）线性相关。",options:["α1+α2,α2+α3,α3-α1","α1-α2,α2-α3,α3+α1","α1+α2,α2+α3,α3+α1","α1-α2,α2-α3,α3-α1"],answer:3,explanation:"(α1-α2)+(α2-α3)+(α3-α1)=0，存在非零组合，线性相关。其他选项均无关。"},
+
+  // === 判断题 ===
+  {id:2001,type:"tf",chapter:"行列式",difficulty:1,question:"一个n阶行列式中某行元素与另一行元素的代数余子式对应相乘后的和必为零。",answer:true,explanation:"行列式展开定理的推论：某行元素乘另一行的代数余子式之和为0。"},
+  {id:2002,type:"tf",chapter:"行列式",difficulty:1,question:"行列式中某两行成比例，则行列式必为零。",answer:true,explanation:"行列式的基本性质：两行成比例→行列式=0。"},
+  {id:2003,type:"tf",chapter:"行列式",difficulty:1,question:"一个标准排列的逆序数必为0。",answer:true,explanation:"标准排列1,2,...,n是自然顺序，逆序数为0。"},
+  {id:2004,type:"tf",chapter:"行列式",difficulty:2,question:"n阶矩阵的行列式中的每一项均是取自行列式中任意n个元素。",answer:false,explanation:"必须取自不同行不同列的n个元素的乘积。"},
+  {id:2005,type:"tf",chapter:"矩阵",difficulty:2,question:"分块矩阵乘法对左侧矩阵列的分块方式有要求。",answer:true,explanation:"分块乘法要求左矩阵列的分块与右矩阵行的分块一致。"},
+  {id:2006,type:"tf",chapter:"矩阵",difficulty:1,question:"矩阵的秩等于矩阵中非零子式的最高阶数。",answer:true,explanation:"矩阵秩的定义：非零子式的最高阶数。"},
+  {id:2007,type:"tf",chapter:"矩阵",difficulty:2,question:"矩阵之间的等价关系具有自反性、对称性和传递性。",answer:true,explanation:"等价关系需满足三条：自反(A~A)、对称(A~B⇒B~A)、传递(A~B,B~C⇒A~C)。矩阵等价满足全部。"},
+  {id:2008,type:"tf",chapter:"矩阵",difficulty:1,question:"矩阵的加法满足交换律，乘法也满足交换律。",answer:false,explanation:"矩阵乘法一般不满足交换律：AB≠BA。"},
+  {id:2009,type:"tf",chapter:"矩阵",difficulty:1,question:"两个n阶矩阵相乘，AB=BA恒成立。",answer:false,explanation:"矩阵乘法不满足交换律，只有特殊情况才成立。"},
+  {id:2010,type:"tf",chapter:"矩阵",difficulty:2,question:"初等变换不改变行列式是否为零这一性质。",answer:true,explanation:"初等变换不改变矩阵的秩，故行列式为零（或非零）的性质不变。"},
+  {id:2011,type:"tf",chapter:"矩阵",difficulty:2,question:"任意矩阵的行秩等于其列秩。",answer:true,explanation:"矩阵的行秩=列秩=矩阵的秩，这是线性代数的基本定理。"},
+  {id:2012,type:"tf",chapter:"行列式",difficulty:1,question:"n个元素的全排列总数是n的平方。",answer:false,explanation:"n个元素的全排列总数是n!，不是n²。"},
+  {id:2013,type:"tf",chapter:"矩阵",difficulty:2,question:"n阶零矩阵既是对称矩阵也是反对称矩阵。",answer:true,explanation:"0ᵀ=0且0ᵀ=-0，同时满足对称和反对称的定义。"},
+  {id:2014,type:"tf",chapter:"线性方程组",difficulty:2,question:"齐次线性方程组有非零解的充要条件是系数矩阵的秩小于未知数的个数。",answer:true,explanation:"Ax=0有非零解⇔R(A)<n。当R(A)=n时只有零解。"},
+  {id:2015,type:"tf",chapter:"线性方程组",difficulty:2,question:"齐次线性方程组可能无解。",answer:false,explanation:"齐次方程组总有零解x=0，不会无解。只有非齐次方程组才可能无解。"},
+  {id:2016,type:"tf",chapter:"矩阵",difficulty:2,question:"可逆矩阵一定可以表示成一系列初等矩阵的乘积。",answer:true,explanation:"可逆矩阵⇔等价于单位矩阵⇔可经初等行变换化为I⇔存在初等矩阵P₁...Pₖ使Pₖ...P₁A=I，故A=P₁⁻¹...Pₖ⁻¹。"},
+  {id:2017,type:"tf",chapter:"线性方程组",difficulty:2,question:"齐次线性方程组的解的任意线性组合仍是该方程组的解。",answer:true,explanation:"齐次解空间对加法和数乘封闭，任意线性组合仍是解。"},
+  {id:2018,type:"tf",chapter:"线性方程组",difficulty:2,question:"非齐次线性方程组有无穷多解的充要条件是R(A)=R(A,b)<n。",answer:true,explanation:"有解的充要条件R(A)=R(A,b)=r。r<n时有无穷多解（自由变量n-r个）。"},
+  {id:2019,type:"tf",chapter:"向量",difficulty:2,question:"向量组线性相关的充要条件是其中存在一个向量可由其余向量线性表出。",answer:true,explanation:"线性相关的等价定义。"},
+  {id:2020,type:"tf",chapter:"线性方程组",difficulty:2,question:"非齐次线性方程组的通解等于它的一个特解加上导出组的通解。",answer:true,explanation:"非齐次通解结构：X=X*+X齐通。这是线性方程组解的结构定理。"},
+  {id:2021,type:"tf",chapter:"向量",difficulty:2,question:"等价的两个向量组必有相同的秩。",answer:true,explanation:"等价向量组可互相线性表出，秩相等。"},
+  {id:2022,type:"tf",chapter:"向量",difficulty:2,question:"线性无关向量组的任意部分组仍线性无关。",answer:true,explanation:"若部分组相关，则原组也相关（逆否命题）。"},
+  {id:2023,type:"tf",chapter:"线性方程组",difficulty:2,question:"齐次线性方程组有无穷多解时，解向量的极大无关组与基础解系是同一概念。",answer:true,explanation:"基础解系就是解空间的一组基，即解向量组的极大线性无关组。"},
+  {id:2024,type:"tf",chapter:"向量",difficulty:1,question:"两个向量线性相关的充要条件是这两个向量相等。",answer:false,explanation:"两个向量相关⇔对应分量成比例，不一定相等。例如(1,2)与(2,4)相关但不相等。"},
+  {id:2025,type:"tf",chapter:"向量",difficulty:1,question:"含有零向量的向量组必线性相关。",answer:true,explanation:"零向量可被任意组合表出：0=0·α₁+...+0·αₙ。"},
+  {id:2027,type:"tf",chapter:"矩阵",difficulty:1,question:"矩阵的乘法一般不满足交换律。",answer:true,explanation:"AB≠BA通常不成立，矩阵乘法次序不可交换。"},
+  {id:2026,type:"tf",chapter:"向量",difficulty:2,question:"n+1个n维向量组成的向量组必线性相关。",answer:true,explanation:"向量个数大于维数→必线性相关（基本定理）。"},
+  {id:2028,type:"tf",chapter:"矩阵",difficulty:2,question:"矩阵等价关系具有对称性。",answer:true,explanation:"等价关系要求自反性、对称性和传递性。矩阵等价满足全部三条。"},
+  {id:2029,type:"tf",chapter:"矩阵",difficulty:2,question:"初等变换改变行列式的值，但不改变其是否为零。",answer:true,explanation:"换法变号、倍法变k倍、消法不变。是否为零的性质均不变。"},
+  {id:2030,type:"tf",chapter:"线性方程组",difficulty:2,question:"齐次线性方程组有非零解⇔R(A)<n。",answer:true,explanation:"Ax=0：R(A)=n→仅有零解；R(A)<n→有非零解。"},
+
+  // === 计算题 ===
+  {id:3001,type:"calculation",chapter:"行列式计算",difficulty:3,question:"计算n阶行列式：主对角线全为1+x，其余元素全为1。即每行是[1,1,...,1+x,1,...,1]形式。",answer:"x^(n-1)·(x+n)",steps:["所有列加到第一列：第一列全为x+n","提取公因式(x+n)","每行减去第一行化为上三角","主对角线：1,x,x,...,x，乘积为x^(n-1)","最终结果：(x+n)·x^(n-1)"],explanation:"经典加边行列式，核心技巧是列加法+提取公因式。"},
+  {id:3002,type:"calculation",chapter:"行列式计算",difficulty:3,question:"计算副对角线行列式：仅副对角线上元素非零，依次为1,2,...,n。",answer:"(-1)^(n(n-1)/2)·n!",steps:["副对角线行列式公式","元素乘积：1·2·...·n=n!","符号：(-1)^(n(n-1)/2)","最终结果：(-1)^(n(n-1)/2)·n!"],explanation:"副对角线行列式=(-1)^(n(n-1)/2)×副对角线元素之积。"},
+  {id:3003,type:"calculation",chapter:"行列式计算",difficulty:2,question:"计算n阶行列式：主对角线全为x，次对角线（主对角线下方第一条）全为y，右上角有一个y，其余为0。",answer:"x^n+(-1)^(n+1)·y^n",steps:["按第一列展开","得递推关系：Dn=x·D(n-1)+(-1)^(n+1)·y^n","D1=x，逐次递推","得Dn=x^n+(-1)^(n+1)·y^n"],explanation:"循环三对角行列式，利用展开+递推求解。"},
+  {id:3004,type:"calculation",chapter:"行列式计算",difficulty:2,question:"计算行列式 |1 1 1 1; 1 2 0 0; 1 0 3 0; 1 0 0 4|。",answer:"-2",steps:["利用行变换：r2-r1, r3-r1, r4-r1","得：第一行(1,1,1,1)，其余行化为对角","计算得-2"],explanation:"通过初等行变换化为上三角后计算。"},
+  {id:3005,type:"calculation",chapter:"行列式计算",difficulty:2,question:"计算行列式 |1 1 1 0; 2 1 4 1; 1 2 0 5; 1 2 4 0|。",answer:"-9",steps:["利用行列式性质进行初等变换","化为阶梯形","计算主对角线乘积"],explanation:"利用行列变换化简计算。"},
+  {id:3006,type:"calculation",chapter:"行列式计算",difficulty:3,question:"计算n阶行列式：主对角线全为x，其余元素全为a（x≠a）。",answer:"(x+(n-1)a)·(x-a)^(n-1)",steps:["所有列加到第一列→全为x+(n-1)a","提取(x+(n-1)a)","每行减第一行→除对角线(x-a)外全0","得(x+(n-1)a)(x-a)^(n-1)"],explanation:"经典对称行列式，又名'箭形行列式'。"},
+  {id:3008,type:"calculation",chapter:"线性方程组",difficulty:3,question:"用克莱姆法则解方程组：3x1+2x2+x3=4; 2x1+3x2+2x3=11; 4x1+x2+3x3=2。",answer:"x1=1, x2=2, x3=-1",steps:["计算系数行列式D=|3,2,1;2,3,2;4,1,3|=(27+16+2)-(12+6+12)=45-30=15","D1=|4,2,1;11,3,2;2,1,3|=15","D2=|3,4,1;2,11,2;4,2,3|=30","D3=|3,2,4;2,3,11;4,1,2|=-15","x1=15/15=1, x2=30/15=2, x3=-15/15=-1"],explanation:"克莱姆法则：xi=Di/D。"},
+  {id:3009,type:"calculation",chapter:"矩阵运算",difficulty:2,question:"已知A=[[1,2],[0,1],[2,0]], B=[[1,1],[2,3],[4,1]]，计算2A+B。",answer:"[[3,5],[2,5],[8,1]]",steps:["2A=[[2,4],[0,2],[4,0]]","2A+B=[[2+1,4+1],[0+2,2+3],[4+4,0+1]]","=[[3,5],[2,5],[8,1]]"],explanation:"矩阵数乘+加法：对应位置运算。"},
+  {id:3011,type:"calculation",chapter:"矩阵",difficulty:2,question:"求矩阵A=[[1,2,3,4],[2,5,3,1],[2,7,5,3],[1,0,1,2]]的秩。",answer:"R(A)=3",steps:["化为行阶梯形","r2-2r1,r3-2r1,r4-r1","继续消元","得3个非零行"],explanation:"矩阵的秩=行阶梯形中非零行的行数。"},
+  {id:3012,type:"calculation",chapter:"矩阵",difficulty:4,question:"设方阵A满足A²-aA+bI=0（b≠0），证明A可逆并求A⁻¹。",answer:"A⁻¹=(aI-A)/b",steps:["由A²-aA+bI=0，移项：A²-aA=-bI","即A(A-aI)=-bI","两边同除-b：A·(aI-A)/b=I","故A⁻¹=(aI-A)/b"],explanation:"关键：将矩阵方程改写为A·X=I的形式，则X=A⁻¹。"},
+  {id:3013,type:"calculation",chapter:"向量",difficulty:2,question:"判断向量α1=(1,3,0,2)ᵀ, α2=(2,1,-1,1)ᵀ, α3=(0,2,1,3)ᵀ的线性相关性。",answer:"线性无关",steps:["构造矩阵A=[α1,α2,α3]","化为行阶梯形","R(A)=3=向量个数","故线性无关"],explanation:"R(A)等于向量个数⇔线性无关。"},
+  {id:3014,type:"calculation",chapter:"矩阵",difficulty:3,question:"设A满足A²+2A=E，证明A可逆并求A⁻¹。",answer:"A⁻¹=A+2I",steps:["A²+2A=E ⇒ A(A+2I)=E","由定义：AB=E ⇒ B=A⁻¹","故A⁻¹=A+2I"],explanation:"直接从A(A+2I)=E得A⁻¹=A+2I。"},
+  {id:3015,type:"calculation",chapter:"线性方程组",difficulty:4,question:"讨论a为何值时，方程组 x1+ax2+x3=1; x1+x2+ax3=1; ax1+x2+x3=1 有解并求其解。",answer:"a≠1且a≠-2：唯一解x1=x2=x3=1/(a+2); a=1：无穷多解; a=-2：无解",steps:["系数行列式|A|=|1,a,1;1,1,a;a,1,1|=(1-a)²(a+2)","a≠1且a≠-2：|A|≠0，唯一解","a=1：R(A)=R(A,b)=1<3，无穷多解","a=-2：R(A)=2≠R(A,b)=3，无解"],explanation:"含参数线性方程组的讨论，关键判断系数行列式为零的情况。"},
+  {id:3016,type:"calculation",chapter:"向量",difficulty:2,question:"求向量组α1=(1,2,1,2)ᵀ, α2=(2,3,2,1)ᵀ, α3=(3,5,3,0)ᵀ, α4=(4,7,4,2)ᵀ的秩和一个极大无关组。",answer:"秩为3，α1,α2,α4为一个极大无关组",steps:["构造矩阵化为行阶梯形","非零行数=3","取对应原向量：α1,α2,α4"],explanation:"极大无关组：能线性表出其余向量的最小无关组。"},
+  {id:3017,type:"calculation",chapter:"向量",difficulty:3,question:"向量组α1=(1,2,1,2)ᵀ, α2=(2,6,3,0)ᵀ, α3=(2,10,5,2)ᵀ, β=(0,2,1,1)ᵀ。判断β能否被α1,α2,α3线性表出，能则写出表示式。",answer:"β=α1-α2+α3",steps:["解方程组x1α1+x2α2+x3α3=β","化为增广矩阵求通解","得x1=1,x2=-1,x3=1"],explanation:"向量β能否被线性表出⇔方程组是否有解。"},
+
+  // === 综合题 ===
+  {id:4001,type:"comprehensive",chapter:"线性方程组",difficulty:4,question:"已知三元非齐次线性方程组AX=b有特解η1=(1,0,2)ᵀ, η2=(-1,2,1)ᵀ, η3=(1,0,0)ᵀ，R(A)=1，求AX=b的通解。",steps:["通解=特解+导出组通解","n-R(A)=3-1=2，导出组基础解系含2个向量","η2-η1=(-2,2,-1)ᵀ是Ax=0的解","η3-η1=(0,0,-2)ᵀ也是Ax=0的解","通解：X=(1,0,2)ᵀ+k1(-2,2,-1)ᵀ+k2(0,0,-2)ᵀ"],answer:"X=(1,0,2)ᵀ+k1(-2,2,-1)ᵀ+k2(0,0,-2)ᵀ, k1,k2∈R",explanation:"解的结构定理：通解=特解+齐次通解。齐次解空间的基由ηi-ηj的无关向量构成。"},
+  {id:4002,type:"comprehensive",chapter:"线性方程组",difficulty:4,question:"求齐次线性方程组的基础解系与通解：x1+x2-x3+x4=0; 2x1+3x2-x3+2x4=0; 3x1+5x2-2x3+3x4=0; x1+2x2+x4=0。",steps:["写出系数矩阵化为行最简形","行最简形：[[1,0,0,1],[0,1,0,0],[0,0,1,0],[0,0,0,0]]","自由变量：x4","基础解系：ξ=(-1,0,0,1)ᵀ","通解：X=k·(-1,0,0,1)ᵀ, k∈R"],answer:"通解X=k(-1,0,0,1)ᵀ, k∈R",explanation:"齐次方程组先化行最简形，确定自由变量，写出基础解系。"},
+  {id:4003,type:"comprehensive",chapter:"矩阵",difficulty:4,question:"设A^k=O（k为正整数），证明：(I-A)⁻¹=I+A+A²+...+A^(k-1)。",steps:["计算：(I-A)(I+A+A²+...+A^(k-1))","=I+A+...+A^(k-1)-A-A²-...-A^k","=I-A^k","=I-O=I","由逆矩阵定义：(I-A)⁻¹=I+A+...+A^(k-1)"],"answer:"证明完毕：利用A^k=O，直接验证乘积=I",explanation:"核心技巧：直接验证(I-A)·(I+A+...+A^(k-1))=I。此公式在数值分析中有重要应用（Neumann级数）。"},
+  {id:4004,type:"comprehensive",chapter:"矩阵",difficulty:3,question:"设A=[[1,0,1],[0,1,0],[0,0,1]]，求A², A³, A^k。",answer:"A^k=[[1,0,k],[0,1,0],[0,0,1]]",steps:["A²=[[1,0,2],[0,1,0],[0,0,1]]","A³=[[1,0,3],[0,1,0],[0,0,1]]","归纳：A^k=[[1,0,k],[0,1,0],[0,0,1]]","可用数学归纳法严格证明"],explanation:"A=I+N形式，N=[[0,0,1],[0,0,0],[0,0,0]]满足N²=O。由二项式展开：A^k=I+kN。"},
+];
+const QUESTION_BANKS = { digital: QUESTION_BANK_DIGITAL, linear: QUESTION_BANK_LINEAR };
+
 // Chapter definitions mapped to question IDs
-const CHAPTERS = [
+const CHAPTERS_DIGITAL = [
   {id:"ch1",name:"数制与编码",icon:"🔢",questionIds:[1,2,12,14,15,17,51,52,201]},
   {id:"ch2",name:"逻辑门与布尔代数",icon:"🚪",questionIds:[3,4,5,6,7,36,53,54,70,202,401]},
   {id:"ch3",name:"组合逻辑电路",icon:"🔌",questionIds:[10,11,16,18,24,25,26,40,48,55,59,64,302,402,404]},
@@ -1256,6 +1392,14 @@ const CHAPTERS = [
   {id:"ch5",name:"Verilog HDL",icon:"💻",questionIds:[8,9,42,57,58,66,203,301,501,502,503,504]},
   {id:"ch6",name:"MOS管与半导体",icon:"🔬",questionIds:[31,205,206,208]}
 ];
+
+const CHAPTERS_LINEAR = [
+  {id:"la1",name:"行列式",icon:"📐",questionIds:[1001,1002,1003,1004,1005,1006,1007,1008,1010,1011,1012,1013,2001,2002,2003,2004,2012,3001,3002,3003,3004,3005,3006]},
+  {id:"la2",name:"矩阵及其运算",icon:"🔲",questionIds:[1014,1015,1016,1017,1018,1020,1021,1032,2005,2006,2007,2008,2009,2010,2011,2013,2016,2027,2028,2029,3009,3011,3012,3014,4003,4004]},
+  {id:"la3",name:"向量与线性方程组",icon:"📊",questionIds:[1019,1022,1023,1024,1025,1026,1027,1028,1029,1030,1031,1033,1034,2014,2015,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026,2030,3008,3013,3015,3016,3017,4001,4002]},
+  {id:"la4",name:"综合证明",icon:"📝",questionIds:[3012,3014,4003,4004]},
+];
+const ALL_CHAPTERS = { digital: CHAPTERS_DIGITAL, linear: CHAPTERS_LINEAR };
 
 // ==================== ACHIEVEMENTS ====================
 const ACHIEVEMENTS = [
@@ -1364,7 +1508,7 @@ const DAILY_TASKS = [
 ];
 
 // ==================== LEVEL DEFINITIONS ====================
-const LEVELS = {
+const LEVELS_DIGITAL = {
   ch1: [
     {id:"1-1", name:"二进制基础", questionIds:[1,2,51,52], timeLimit:300},
     {id:"1-2", name:"进制转换", questionIds:[12,14,15,17], timeLimit:300},
@@ -1398,10 +1542,32 @@ const LEVELS = {
   ],
 };
 
+const LEVELS_LINEAR = {
+  la1: [
+    {id:"la1-1",name:"行列式基础",questionIds:[1001,1002,1003,1012,1013,2001,2002,2003,2004,2012],timeLimit:360},
+    {id:"la1-2",name:"行列式计算",questionIds:[1004,1005,1006,1007,1008,1010,1011,3001,3002,3004,3005],timeLimit:480},
+    {id:"la1-3",name:"行列式综合",questionIds:[3003,3006],timeLimit:300},
+  ],
+  la2: [
+    {id:"la2-1",name:"矩阵基础",questionIds:[1014,1015,1016,1017,1020,1021,1032,2005,2006,2007,2008,2009,2027,2028],timeLimit:420},
+    {id:"la2-2",name:"矩阵运算",questionIds:[2010,2011,2013,2016,2029,3009,3011],timeLimit:360},
+    {id:"la2-3",name:"矩阵综合",questionIds:[1018,3012,3014,4003,4004],timeLimit:480},
+  ],
+  la3: [
+    {id:"la3-1",name:"线性方程组基础",questionIds:[1019,1028,1030,1033,2014,2015,2017,2018,2020,2030,3008],timeLimit:420},
+    {id:"la3-2",name:"向量与线性相关性",questionIds:[1022,1023,1024,1025,1026,1029,1031,1034,2019,2021,2022,2023,2024,2025,2026],timeLimit:480},
+    {id:"la3-3",name:"解的结构与综合",questionIds:[1027,3013,3015,3016,3017,4001,4002],timeLimit:480},
+  ],
+  la4: [
+    {id:"la4-1",name:"证明与矩阵综合",questionIds:[3012,3014,4003,4004],timeLimit:360},
+  ],
+};
+const ALL_LEVELS = { digital: LEVELS_DIGITAL, linear: LEVELS_LINEAR };
+
 // Level helpers
 function findLevel(levelId) {
-  for (const chId in LEVELS) {
-    const level = LEVELS[chId].find(l => l.id === levelId);
+  for (const chId in getCurrentLevels()) {
+    const level = getCurrentLevels()[chId].find(l => l.id === levelId);
     if (level) return { chapterId: chId, level };
   }
   return null;
@@ -1419,7 +1585,7 @@ function isChapterFullyUnlocked(chapterId) {
   const idx = chapterKeys.indexOf(chapterId);
   if (idx <= 0) return true; // ch1 always unlocked
   const prevChId = chapterKeys[idx - 1];
-  const levels = LEVELS[prevChId] || [];
+  const levels = getCurrentLevels()[prevChId] || [];
   if (!levels.length) return true;
   const chState = appState.chapters[prevChId];
   return levels.every(lv => {
@@ -1432,7 +1598,7 @@ function getNextLevelId(levelId) {
   const found = findLevel(levelId);
   if (!found) return null;
   const { chapterId } = found;
-  const levels = LEVELS[chapterId];
+  const levels = getCurrentLevels()[chapterId];
   const idx = levels.findIndex(l => l.id === levelId);
   if (idx >= 0 && idx < levels.length - 1) {
     return levels[idx + 1].id;
@@ -1441,7 +1607,7 @@ function getNextLevelId(levelId) {
   const chapterKeys = ["ch1","ch2","ch3","ch4","ch5","ch6"];
   const chIdx = chapterKeys.indexOf(chapterId);
   if (chIdx >= 0 && chIdx < chapterKeys.length - 1) {
-    const nextChLevels = LEVELS[chapterKeys[chIdx + 1]];
+    const nextChLevels = getCurrentLevels()[chapterKeys[chIdx + 1]];
     if (nextChLevels && nextChLevels.length > 0 && isChapterFullyUnlocked(chapterKeys[chIdx + 1])) {
       return nextChLevels[0].id;
     }
@@ -1476,7 +1642,8 @@ async function hashPassword(password) {
 }
 
 function getStorageKey(username) {
-  return `logicquest_${username}_v1`;
+  const subj = (typeof currentSubject !== 'undefined' && currentSubject) ? currentSubject : 'digital';
+  return `logicquest_${username}_${subj}_v1`;
 }
 
 function getAccounts() {
@@ -1593,12 +1760,19 @@ function registerUser(username, passwordHash) {
 
 function loginUser(username) {
   currentUser = username;
-
-  // Migrate old data if exists
   migrateOldDataIfExists(username);
-
-  hideAuthOverlay();
-  initAppAfterLogin();
+  document.getElementById('auth-error').style.display = 'none';
+  appState = getDefaultState();
+  // Try to load existing data for digital (default subject)
+  currentSubject = 'digital';
+  const stored = localStorage.getItem(getStorageKey(username));
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      appState = Object.assign(getDefaultState(), parsed);
+    } catch(e) { console.warn('Data parse error, using defaults'); }
+  }
+  renderSubjectPicker();
 }
 
 function migrateOldDataIfExists(username) {
@@ -1669,7 +1843,7 @@ function getDefaultState() {
   return {
     totalAnswered: 0,
     totalCorrect: 0,
-    coins: 0,
+    sharedCoins: 0,
     streak: 0,
     lastActiveDate: null,
     wrongBook: [],     // array of {qid, wrongCount, lastWrong, revenged:false, chapter, correctInARow:0}
@@ -1781,11 +1955,11 @@ function importData(file) {
 
 // ==================== HELPERS ====================
 function getQuestionById(id) {
-  return QUESTION_BANK.find(q => q.id === id);
+  return getCurrentBank().find(q => q.id === id);
 }
 
 function getChapterById(id) {
-  return CHAPTERS.find(ch => ch.id === id);
+  return getCurrentChapters().find(ch => ch.id === id);
 }
 
 function getDifficultyStars(level) {
@@ -1793,7 +1967,7 @@ function getDifficultyStars(level) {
 }
 
 function getTypeLabel(type) {
-  const map = {choice:"选择题",fill:"填空题",short:"简答题",comprehensive:"综合题",code:"编程题"};
+  const map = {choice:"选择题",tf:"判断题",fill:"填空题",short:"简答题",comprehensive:"综合题",code:"编程题",calculation:"计算题"};
   return map[type] || type;
 }
 
@@ -1810,6 +1984,69 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}分${s}秒`;
+}
+
+function getRankName() {
+  const level = Math.floor((appState.totalCorrect || 0) / 50) + 1;
+  return 'Lv.' + level;
+}
+
+function renderSubjectPicker() {
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('app-container').style.display = 'block';
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('mobile-nav').style.display = 'none';
+  const main = document.getElementById('main-content');
+  main.innerHTML = `
+    <div class="subject-picker">
+      <h2>👋 欢迎，${currentUser}</h2>
+      <p class="subject-prompt">选择你要刷题的学科</p>
+      <div class="subject-cards">
+        ${Object.values(SUBJECTS).map(s => `
+          <div class="subject-card" onclick="selectSubject('${s.id}')" style="border-color:${s.color}">
+            <div class="subject-icon">${s.icon}</div>
+            <div class="subject-name">${s.name}</div>
+            <div class="subject-stats">${Object.keys(s.typeNames).length} 种题型</div>
+            <button class="subject-enter-btn" style="background:${s.color}">进入 →</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="subject-shared-stats">
+        💰 总金币: ${appState.sharedCoins || 0} | ⭐ 等级: ${getRankName()}
+      </div>
+      <button class="logout-btn" onclick="logoutUser()">退出登录</button>
+    </div>
+  `;
+}
+
+function selectSubject(subjectId) {
+  currentSubject = subjectId;
+  document.getElementById('sidebar').style.display = '';
+  document.getElementById('mobile-nav').style.display = '';
+  initStorage();
+  initSkin();
+  updateTopbar();
+  navigateTo('home');
+  appState.lastSubject = subjectId;
+  saveState();
+}
+
+function toggleSubjectMenu() {
+  const dd = document.getElementById('subject-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+function switchSubject(subjectId) {
+  if (subjectId === currentSubject) { toggleSubjectMenu(); return; }
+  saveState();
+  currentSubject = subjectId;
+  appState.lastSubject = subjectId;
+  initStorage();
+  updateTopbar();
+  navigateTo('home');
+  toggleSubjectMenu();
+  document.getElementById('current-subject-display').textContent =
+    SUBJECTS[subjectId].icon + ' ' + SUBJECTS[subjectId].name + ' ▼';
 }
 
 // ==================== NAVIGATION ====================
@@ -1968,7 +2205,7 @@ function renderHomePage() {
     <!-- Quick Chapter Jump -->
     <h3 style="margin-bottom:14px;">📚 章节速览</h3>
     <div class="mode-cards">
-      ${CHAPTERS.map(ch => {
+      ${getCurrentChapters().map(ch => {
         const total = ch.questionIds.length;
         const progress = appState.chapterProgress[ch.id] || 0;
         const pct = total > 0 ? Math.round((progress / total) * 100) : 0;
@@ -2000,7 +2237,7 @@ function getTodayStats() {
 let currentSession = null;
 
 function buildQuestionList(type, mode, count) {
-  let pool = [...QUESTION_BANK];
+  let pool = [...getCurrentBank()];
   if (type !== "all") {
     pool = pool.filter(q => q.type === type);
   }
@@ -2031,9 +2268,9 @@ function startQuickSession() {
 
 function startLevelsSession() {
   // Sort questions by chapter and difficulty
-  const questions = [...QUESTION_BANK].sort((a,b) => {
-    const chIdxA = CHAPTERS.findIndex(c => c.questionIds.includes(a.id));
-    const chIdxB = CHAPTERS.findIndex(c => c.questionIds.includes(b.id));
+  const questions = [...getCurrentBank()].sort((a,b) => {
+    const chIdxA = getCurrentChapters().findIndex(c => c.questionIds.includes(a.id));
+    const chIdxB = getCurrentChapters().findIndex(c => c.questionIds.includes(b.id));
     if (chIdxA !== chIdxB) return chIdxA - chIdxB;
     return a.difficulty - b.difficulty;
   });
@@ -2052,11 +2289,11 @@ function startChallengeSession() {
 }
 
 function startExamSession() {
-  const choiceQs = shuffleArray(QUESTION_BANK.filter(q => q.type === "choice")).slice(0, 20);
-  const fillQs = shuffleArray(QUESTION_BANK.filter(q => q.type === "fill")).slice(0, 4);
-  const shortQs = shuffleArray(QUESTION_BANK.filter(q => q.type === "short")).slice(0, 2);
-  const compQs = shuffleArray(QUESTION_BANK.filter(q => q.type === "comprehensive")).slice(0, 2);
-  const codeQs = shuffleArray(QUESTION_BANK.filter(q => q.type === "code")).slice(0, 2);
+  const choiceQs = shuffleArray(getCurrentBank().filter(q => q.type === "choice")).slice(0, 20);
+  const fillQs = shuffleArray(getCurrentBank().filter(q => q.type === "fill")).slice(0, 4);
+  const shortQs = shuffleArray(getCurrentBank().filter(q => q.type === "short")).slice(0, 2);
+  const compQs = shuffleArray(getCurrentBank().filter(q => q.type === "comprehensive")).slice(0, 2);
+  const codeQs = shuffleArray(getCurrentBank().filter(q => q.type === "code")).slice(0, 2);
   const questions = shuffleArray([...choiceQs, ...fillQs, ...shortQs, ...compQs, ...codeQs]);
 
   currentSession = {
@@ -2170,7 +2407,7 @@ function timeUpAutoSubmit() {
 function renderLevelResult(session, score, correct, total, timeSpent) {
   const stars = getStarRating(score);
   const coinsEarned = stars * 30 + correct * 5;
-  updateState({ coins: appState.coins + coinsEarned });
+  updateState({ sharedCoins: appState.sharedCoins + coinsEarned });
   saveLevelProgress(session.levelId, stars, score);
 
   // Check achievements after level completes (for three-star, first-level, etc.)
@@ -2225,6 +2462,7 @@ function renderQuestion(session) {
   }
 
   selectedOptionIndex = null;
+  answerSubmitted = false;
 
   const q = session.questions[session.currentIndex];
   const progressPct = Math.round(((session.currentIndex) / session.questions.length) * 100);
@@ -2288,6 +2526,9 @@ function renderQuestion(session) {
   switch(q.type) {
     case "choice":
       html += renderChoiceQuestion(q);
+      break;
+    case "tf":
+      html += renderTFQuestion(q);
       break;
     case "fill":
       html += renderFillQuestion(q);
@@ -2385,6 +2626,15 @@ function renderCodeQuestion(q) {
     </div>`;
 }
 
+function renderTFQuestion(q) {
+  return `
+    <div class="tf-options">
+      <button class="tf-btn tf-true" onclick="submitTFAnswer(true)">✅ 正确</button>
+      <button class="tf-btn tf-false" onclick="submitTFAnswer(false)">❌ 错误</button>
+    </div>
+  `;
+}
+
 function getSessionTitle(session) {
   const map = {
     quick: "快速刷题",
@@ -2405,6 +2655,7 @@ function getSessionTitle(session) {
 
 // ==================== QUESTION INTERACTION ====================
 let selectedOptionIndex = null;
+let answerSubmitted = false;
 
 function selectOption(el, idx) {
   document.querySelectorAll(".option-item").forEach(item => item.classList.remove("selected"));
@@ -2439,6 +2690,9 @@ function submitAnswer() {
       userAnswer = Array.from(fillInputs).map(inp => inp.value.trim());
       isCorrect = checkFillAnswer(q, userAnswer);
       break;
+    case "tf":
+      // TF questions are submitted via submitTFAnswer button clicks
+      return;
     case "short":
     case "comprehensive":
     case "code":
@@ -2495,7 +2749,7 @@ function submitAnswer() {
   // Award coins for correct answers
   if (isCorrect === true) {
     const coinsEarned = q.difficulty * 5 + (currentSession.type === "challenge" ? (currentSession.streak || 1) * 2 : 0);
-    updateState({ coins: appState.coins + coinsEarned });
+    updateState({ sharedCoins: appState.sharedCoins + coinsEarned });
     showCoinAnimation(coinsEarned);
   }
 
@@ -2519,6 +2773,44 @@ function submitAnswer() {
   } else {
     advanceQuestion();
   }
+}
+
+function submitTFAnswer(userAnswer) {
+  if (answerSubmitted) return;
+  answerSubmitted = true;
+  const q = currentSession.questions[currentSession.currentIndex];
+  const isCorrect = (userAnswer === q.answer);
+
+  // Save answer
+  currentSession.answers[currentSession.currentIndex] = {
+    questionId: q.id,
+    userAnswer,
+    isCorrect
+  };
+
+  if (isCorrect) {
+    const coinsEarned = q.difficulty * 5;
+    updateState({ sharedCoins: appState.sharedCoins + coinsEarned });
+    showCoinAnimation(coinsEarned);
+    currentSession.correct = (currentSession.correct || 0) + 1;
+  } else {
+    addToWrongBook(q.id);
+  }
+
+  // Highlight buttons
+  const btns = document.querySelectorAll('.tf-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    const val = b.classList.contains('tf-true') ? true : false;
+    if (val === q.answer) b.classList.add('correct');
+    if (val === userAnswer && !isCorrect) b.classList.add('wrong');
+  });
+
+  showExplanation(q);
+  currentSession.totalAnswered = (currentSession.totalAnswered || 0) + 1;
+  updateDailyTasks(q, isCorrect);
+
+  setTimeout(() => advanceQuestion(), 1500);
 }
 
 function showChoiceResult(q) {
@@ -3095,13 +3387,13 @@ function submitRevengeAnswer() {
       if (currentSession.batchMode) {
         currentSession.revengedInBatch = (currentSession.revengedInBatch || 0) + 1;
       }
-      updateState({ coins: appState.coins + 50 });
+      updateState({ sharedCoins: appState.sharedCoins + 50 });
       showRevengeToast(qId);
       playSound('achievement');
     }
 
     // Award small coin reward per correct answer
-    updateState({ coins: appState.coins + 5 });
+    updateState({ sharedCoins: appState.sharedCoins + 5 });
   } else if (isCorrect === false) {
     playSound('wrong');
     if (q.type === 'choice' && selectedOptionIndex !== null) {
@@ -3164,7 +3456,7 @@ function showRevengeResults(session) {
     totalRevenged = session.revengedInBatch || 0;
     // Bonus for completing all
     if (totalRevenged >= session.questions.length) {
-      updateState({ coins: appState.coins + 100 });
+      updateState({ sharedCoins: appState.sharedCoins + 100 });
     }
   } else {
     totalRevenged = session.correctInARow >= 3 ? 1 : 0;
@@ -3261,10 +3553,10 @@ function renderLevelMap() {
   let html = `<div class="level-map"><h2 style="margin-bottom:24px;">🗺️ 闯关地图</h2>
     <p style="color:var(--text-secondary);margin-bottom:24px;">逐关突破，从基础到进阶，系统掌握数字逻辑</p>`;
 
-  CHAPTERS.forEach((ch, chIdx) => {
+  getCurrentChapters().forEach((ch, chIdx) => {
     const chId = ch.id;
     const chapterUnlocked = isChapterFullyUnlocked(chId);
-    const levels = LEVELS[chId] || [];
+    const levels = getCurrentLevels()[chId] || [];
     const totalLevels = levels.length;
 
     // Count completed levels and total stars
@@ -3426,11 +3718,11 @@ function renderExamPage() {
 
 function renderExamSetupPage() {
   const typeDefs = [
-    { key: "choice", name: "选择题", icon: "📋", available: QUESTION_BANK.filter(q => q.type === "choice").length },
-    { key: "fill", name: "填空题", icon: "✏️", available: QUESTION_BANK.filter(q => q.type === "fill").length },
-    { key: "short", name: "简答题", icon: "📝", available: QUESTION_BANK.filter(q => q.type === "short").length },
-    { key: "comprehensive", name: "综合题", icon: "🔬", available: QUESTION_BANK.filter(q => q.type === "comprehensive").length },
-    { key: "code", name: "编程题", icon: "💻", available: QUESTION_BANK.filter(q => q.type === "code").length },
+    { key: "choice", name: "选择题", icon: "📋", available: getCurrentBank().filter(q => q.type === "choice").length },
+    { key: "fill", name: "填空题", icon: "✏️", available: getCurrentBank().filter(q => q.type === "fill").length },
+    { key: "short", name: "简答题", icon: "📝", available: getCurrentBank().filter(q => q.type === "short").length },
+    { key: "comprehensive", name: "综合题", icon: "🔬", available: getCurrentBank().filter(q => q.type === "comprehensive").length },
+    { key: "code", name: "编程题", icon: "💻", available: getCurrentBank().filter(q => q.type === "code").length },
   ];
 
   const totalAvailable = typeDefs
@@ -3520,7 +3812,7 @@ function startExamSessionCustom() {
 
   if (selectedTypes.length === 0) { alert("请至少选择一种题型！"); return; }
 
-  let pool = QUESTION_BANK.filter(q => selectedTypes.includes(q.type));
+  let pool = getCurrentBank().filter(q => selectedTypes.includes(q.type));
   if (pool.length === 0) { alert("没有符合条件的题目！"); return; }
 
   const count = Math.min(examConfig.questionCount, pool.length);
@@ -3871,7 +4163,7 @@ function showExamResults(session) {
 
   // Award coins
   const coinsEarned = Math.round(score * 0.5) + correct * 2;
-  updateState({ coins: appState.coins + coinsEarned });
+  updateState({ sharedCoins: appState.sharedCoins + coinsEarned });
 
   // Check achievements
   checkAchievements();
@@ -3967,8 +4259,8 @@ function checkAchievements() {
   let threeStarLevels = 0;
   let anyLevelCompleted = false;
   let allLevelsThreeStar = true;
-  for (const chId in LEVELS) {
-    const levels = LEVELS[chId];
+  for (const chId in getCurrentLevels()) {
+    const levels = getCurrentLevels()[chId];
     const chState = appState.chapters[chId];
     levels.forEach(lv => {
       const ls = chState && chState.levels && chState.levels[lv.id];
@@ -4027,7 +4319,7 @@ function checkAchievements() {
         break;
       case "speed-demon": met = (appState.lastQuestionAnswerTime || 999) < 30 && (appState.lastQuestionAnswerTime || 999) > 0; break;
       case "streak-10": met = appState.completedSessions.some(s => s.type === "extreme" && s.maxStreak >= 10); break;
-      case "rich": met = appState.coins >= 5000; break;
+      case "rich": met = appState.sharedCoins >= 5000; break;
       case "night-owl": met = (currentHour >= 0 && currentHour < 5); break;
       case "persistent": met = hasPersistent; break;
       case "unlucky": met = lastExtreme && lastExtreme.score === 13; break;
@@ -4046,7 +4338,7 @@ function checkAchievements() {
       const ach = ACHIEVEMENTS.find(a => a.id === n.id);
       if (ach) totalPoints += ach.points;
     });
-    updateState({ coins: appState.coins + totalPoints });
+    updateState({ sharedCoins: appState.sharedCoins + totalPoints });
     showAchievementToast(newUnlocks);
     saveState();
   }
@@ -4200,7 +4492,7 @@ function claimDailyTaskReward(taskId) {
   if (!progress || !progress.completed || progress.claimed) return;
   progress.claimed = true;
   appState.dailyTaskProgress[taskId] = progress;
-  updateState({ coins: appState.coins + task.reward });
+  updateState({ sharedCoins: appState.sharedCoins + task.reward });
   saveState();
   // Check if all 4 claimed for bonus
   const allClaimed = DAILY_TASKS.every(t => {
@@ -4209,7 +4501,7 @@ function claimDailyTaskReward(taskId) {
   });
   if (allClaimed && !appState.dailyTaskProgress._allBonusClaimed) {
     appState.dailyTaskProgress._allBonusClaimed = true;
-    updateState({ coins: appState.coins + 100 });
+    updateState({ sharedCoins: appState.sharedCoins + 100 });
     alert("🎉 全勤奖励！+100 💰");
   }
   navigateTo("home");
@@ -4291,7 +4583,7 @@ function renderDashboardPage() {
   const correct = appState.totalCorrect;
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
   const totalTime = appState.completedSessions.reduce((sum, s) => sum + (s.timeSpent || 0), 0);
-  const coins = appState.coins;
+  const coins = appState.sharedCoins;
   const streak = appState.streak;
   const rankScore = total + correct * 2 + streak * 10;
   const rankName = rankScore >= 1000 ? '传说' : rankScore >= 500 ? '大师' : rankScore >= 300 ? '达人' : rankScore >= 100 ? '学徒' : '新手';
@@ -4323,7 +4615,7 @@ function renderDashboardPage() {
   const typeLabels = { choice: '选择', fill: '填空', short: '简答', comprehensive: '综合', code: '编程' };
   const typeColors = ['var(--accent-cyan)', 'var(--accent-purple)', 'var(--accent-gold)', 'var(--accent-pink)', 'var(--accent-orange)'];
   const typeStats = {};
-  QUESTION_BANK.forEach(q => {
+  getCurrentBank().forEach(q => {
     if (!typeStats[q.type]) typeStats[q.type] = { total: 0, correct: 0 };
     typeStats[q.type].total++;
   });
@@ -4342,11 +4634,11 @@ function renderDashboardPage() {
 
   // Section 4: Weak points from wrongBook
   const chapterErrors = {};
-  CHAPTERS.forEach(ch => { chapterErrors[ch.id] = { name: ch.name, icon: ch.icon, wrong: 0, total: ch.questionIds.length }; });
+  getCurrentChapters().forEach(ch => { chapterErrors[ch.id] = { name: ch.name, icon: ch.icon, wrong: 0, total: ch.questionIds.length }; });
   appState.wrongBook.forEach(w => {
     const q = getQuestionById(w.qid);
     if (q) {
-      const ch = CHAPTERS.find(c => c.questionIds.includes(q.id));
+      const ch = getCurrentChapters().find(c => c.questionIds.includes(q.id));
       if (ch && chapterErrors[ch.id]) {
         chapterErrors[ch.id].wrong += w.wrongCount || 1;
       }
@@ -4424,7 +4716,7 @@ function renderDashboardPage() {
       ${weakPoints.map(wp => {
         const indicator = wp.rate > 50 ? '🔴' : wp.rate > 30 ? '🟠' : '🟡';
         const color = wp.rate > 50 ? 'var(--color-wrong)' : wp.rate > 30 ? 'var(--accent-orange)' : 'var(--accent-gold)';
-        const ch = CHAPTERS.find(c => c.name === wp.name);
+        const ch = getCurrentChapters().find(c => c.name === wp.name);
         const chId = ch ? ch.id : '';
         return `
         <div class="list-item" style="cursor:pointer;margin-bottom:8px;" onclick="${chId ? "navigateTo('levels');" : ""}">
@@ -4674,10 +4966,10 @@ function showCoinAnimation(amount) {
 function buyShopItem(itemId) {
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if (!item) return;
-  if (appState.coins < item.price) { showToast("余额不足！"); return; }
+  if (appState.sharedCoins < item.price) { showToast("余额不足！"); return; }
   if (!confirm(`确认购买 ${item.name}？\n价格: ${item.price} 💰`)) return;
 
-  appState.coins -= item.price;
+  appState.sharedCoins -= item.price;
 
   if (item.type === "consumable") {
     if (!appState.inventory) appState.inventory = { shield: 0, extraTime: 0, eliminateWrong: 0, revive: 0 };
@@ -4741,7 +5033,7 @@ function renderShopPageInner() {
   let html = `<div class="list-page" style="animation:fadeIn 0.4s ease;">
     <div class="shop-header">
       <h2>🏪 商店</h2>
-      <span class="shop-balance">💰 余额: ${appState.coins}</span>
+      <span class="shop-balance">💰 余额: ${appState.sharedCoins}</span>
     </div>
 
     <div class="shop-tabs">
@@ -4763,7 +5055,7 @@ function renderShopPageInner() {
 
     if (item.type === "consumable") {
       // always buyable
-      if (appState.coins >= item.price) {
+      if (appState.sharedCoins >= item.price) {
         actionHTML = `<button class="btn btn-primary btn-sm" onclick="buyShopItem('${item.id}')">🪙 购买</button>`;
       } else {
         actionHTML = `<button class="btn btn-sm" style="background:var(--bg-primary);color:var(--text-muted);cursor:not-allowed;border:1px solid rgba(255,255,255,0.08);">余额不足</button>`;
@@ -4778,7 +5070,7 @@ function renderShopPageInner() {
           actionHTML = `<button class="btn btn-cyan btn-sm" onclick="equipSkin('${item.skinId}')">装备</button>`;
         }
       } else {
-        if (appState.coins >= item.price) {
+        if (appState.sharedCoins >= item.price) {
           actionHTML = `<button class="btn btn-primary btn-sm" onclick="buyShopItem('${item.id}')">🪙 购买</button>`;
         } else {
           actionHTML = `<button class="btn btn-sm" style="background:var(--bg-primary);color:var(--text-muted);cursor:not-allowed;border:1px solid rgba(255,255,255,0.08);">余额不足</button>`;
@@ -4794,7 +5086,7 @@ function renderShopPageInner() {
           actionHTML = `<button class="btn btn-cyan btn-sm" onclick="equipTitle('${item.titleText}')">装备</button>`;
         }
       } else {
-        if (appState.coins >= item.price) {
+        if (appState.sharedCoins >= item.price) {
           actionHTML = `<button class="btn btn-primary btn-sm" onclick="buyShopItem('${item.id}')">🪙 购买</button>`;
         } else {
           actionHTML = `<button class="btn btn-sm" style="background:var(--bg-primary);color:var(--text-muted);cursor:not-allowed;border:1px solid rgba(255,255,255,0.08);">余额不足</button>`;
@@ -4872,7 +5164,7 @@ function renderSettingsPage() {
       <div class="settings-section">
         <h3>ℹ️ 关于</h3>
         <p style="color:var(--text-secondary);">LogicQuest v1.0 · 数字逻辑刷题助手</p>
-        <p style="color:var(--text-muted);font-size:0.8rem;">题库共 ${QUESTION_BANK.length} 题，覆盖6大章节</p>
+        <p style="color:var(--text-muted);font-size:0.8rem;">题库共 ${getCurrentBank().length} 题，覆盖6大章节</p>
       </div>
     </div>
   </div>`;
@@ -4885,7 +5177,7 @@ function toggleSetting(key) {
 
 // ==================== TOPBAR UPDATE ====================
 function updateTopbar() {
-  document.getElementById("coins-display").textContent = appState.coins;
+  document.getElementById("coins-display").textContent = appState.sharedCoins;
   document.getElementById("streak-display").textContent = appState.streak;
   const level = Math.floor(appState.totalCorrect / 50) + 1;
   document.getElementById("level-display").textContent = "Lv." + level;
@@ -4907,6 +5199,12 @@ function updateTopbar() {
   if (userDisplay && currentUser) {
     userDisplay.style.display = "flex";
     userDisplay.textContent = '👤 ' + currentUser + ' ▼';
+  }
+
+  // Update subject display
+  if (document.getElementById('current-subject-display')) {
+    const s = SUBJECTS[currentSubject] || SUBJECTS['digital'];
+    document.getElementById('current-subject-display').textContent = s.icon + ' ' + s.name + ' ▼';
   }
 }
 
@@ -4998,7 +5296,7 @@ function getExtremeStreakMultiplier(streak) {
 }
 
 function generateExtremeQuestion() {
-  const pool = QUESTION_BANK.filter(q => q.type === "choice" || q.type === "fill");
+  const pool = getCurrentBank().filter(q => q.type === "choice" || q.type === "fill");
   if (!pool.length) return null;
   return pool[Math.floor(Math.random() * pool.length)];
 }
@@ -5393,7 +5691,7 @@ function endExtremeChallenge() {
   // Award coins
   const totalCoins = session.coinsEarned || 0;
   const totalAnswered = (session.questionsAnswered || 0) + 1; // include current question
-  updateState({ coins: appState.coins + totalCoins });
+  updateState({ sharedCoins: appState.sharedCoins + totalCoins });
 
   // Consume used items from inventory
   if (!appState.inventory) appState.inventory = { shield: 2, extraTime: 1, eliminateWrong: 0 };
