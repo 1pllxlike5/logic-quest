@@ -4993,11 +4993,13 @@ function buyShopItem(itemId) {
   showToast(`✅ 成功购买 ${item.name}！`);
 
   // Re-render shop
-  renderShopPageInner();
+  refreshShopUI();
 }
 
 function equipSkin(skinId) {
+  appState.equippedSkin = skinId;
   applySkin(skinId);
+  saveState();
   showToast(`🎨 已装备皮肤: ${skinId}`);
 }
 
@@ -5013,6 +5015,10 @@ let shopActiveTab = "consumable"; // consumable, skin, title
 
 function renderShopPage() {
   return renderShopPageInner();
+}
+
+function refreshShopUI() {
+  document.getElementById('main-content').innerHTML = renderShopPageInner();
 }
 
 function renderShopPageInner() {
@@ -5041,7 +5047,7 @@ function renderShopPageInner() {
         {key:"skin", label:"皮肤"},
         {key:"title", label:"称号"}
       ].map(t => `
-        <button class="shop-tab${shopActiveTab === t.key ? ' active' : ''}" onclick="shopActiveTab='${t.key}';renderShopPageInner();">${t.label}</button>
+        <button class="shop-tab${shopActiveTab === t.key ? ' active' : ''}" onclick="shopActiveTab='${t.key}';refreshShopUI();">${t.label}</button>
       `).join("")}
     </div>
 
