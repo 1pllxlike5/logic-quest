@@ -5122,7 +5122,7 @@ function renderShopPageInner() {
   }
 
   html += `</div></div>`;
-  document.getElementById("main-content").innerHTML = html;
+  return html;  // Return HTML string, caller sets DOM
 }
 
 // ==================== PAGE: SETTINGS ====================
