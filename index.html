@@ -1203,14 +1203,14 @@ const QUESTION_BANK_DIGITAL = [
   {id:1,type:"choice",chapter:"数制与编码",difficulty:1,question:"在二进制数中，1011+1101 的结果是（ ）。",options:["10100","10110","10010","11000"],answer:3,explanation:"二进制加法：1+1=10进位，逐位计算得11000。"},
   {id:2,type:"choice",chapter:"数制与编码",difficulty:1,question:"有连续值的量是（ ）。",options:["二进制量","模拟量","数字量","自然量"],answer:1,explanation:"模拟量是连续变化的量，数字量是离散的。"},
   {id:3,type:"choice",chapter:"逻辑门与布尔代数",difficulty:1,question:"在两输入逻辑电路中，只有在输入相反时输出才为真，这个门电路是（ ）门。",options:["与","或","非","异或"],answer:3,explanation:"异或门(XOR)：输入相异时输出为1，相同时输出为0。"},
-  {id:4,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"根据摩根定理，选项（ ）是正确的。",options:["(AB)'=A'+B'","(A+B)'=A'B'","A+BC=(A+B)(A+C)","以上都对"],answer:3,explanation:"摩根定理：(AB)'=A'+B'，(A+B)'=A'B'。选项A和B都正确，故选D。"},
+  {id:4,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"根据摩根定理，选项（ ）是正确的。",options:["(AB)'=A'+B'","(A+B)'=A'B'","A+BC=(A+B)(A+C)","以上都对"],answer:3,explanation:"摩根定理：(AB)'=A'+B'，(A+B)'=A'B'。选项A和B都正确，故选D。",images:["images/Q4_fig1.jpg"]},
   {id:5,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"在一个4变量的卡诺图中，一个3变量的乘积项是由下列（ ）产生的。",options:["为1的8个小方格组成","为1的4个小方格组成","为1的3个小方格组成","为1的2个小方格组成"],answer:3,explanation:"n变量乘积项由2^(4-n)个小方格组成。3变量项=2^(4-3)=2个小方格。"},
-  {id:6,type:"choice",chapter:"逻辑门与布尔代数",difficulty:3,question:"函数F的卡诺图如图1-1所示，请写出最简与或表达式（ ）。",options:["F=AB+C","F=A+BC","F=AC+B","F=ABC"],answer:0,explanation:"根据卡诺图化简得F=AB+C。"},
+  {id:6,type:"choice",chapter:"逻辑门与布尔代数",difficulty:3,question:"函数F的卡诺图如图1-1所示，请写出最简与或表达式（ ）。",options:["F=AB+C","F=A+BC","F=AC+B","F=ABC"],answer:0,explanation:"根据卡诺图化简得F=AB+C。",images:["images/Q6_fig1.jpg","images/Q6_fig2.jpg"]},
   {id:7,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"已知F(A,B,C)=Σm(0,1,2,3,4,5,6)，则F=( )。",options:["ABC","A+B+C","A'+B'+C'","ABC'"],answer:1,explanation:"Σm(0~6)涵盖除m7外的所有最小项，F=A+B+C。"},
   {id:8,type:"choice",chapter:"Verilog HDL",difficulty:2,question:"下面哪些是合法的标示符（ ）。",options:["data","and","module","8sum"],answer:0,explanation:"Verilog标识符不能是关键字(and,module)，不能以数字开头(8sum)。"},
   {id:9,type:"choice",chapter:"Verilog HDL",difficulty:2,question:"已知a=1b'1；b=3b'001；那么{a,b}=( )。",options:["4b'0011","3b'001","4b'1001","3b'101"],answer:2,explanation:"拼接运算{a,b}：a=1位(1)，b=3位(001)，结果=4b'1001。"},
   {id:10,type:"choice",chapter:"组合逻辑电路",difficulty:2,question:"一个全加器输入为Ai=1,Bi=0,Cin=1,则其输出为（ ）。",options:["Si=0,COUT=0","Si=0,COUT=1","Si=1,COUT=0","Si=1,COUT=1"],answer:1,explanation:"1+0+1=2=10(二进制)，Si=0,COUT=1。"},
-  {id:11,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"一个共阴极七段数码管译码器，输入为0101时，七段输出a~g的值分别等于（ ）。",options:["1011011","1011111","0100100","0100000"],answer:0,explanation:"输入0101=5，数字5在共阴极数码管中a~g=1011011。"},
+  {id:11,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"一个共阴极七段数码管译码器，输入为0101时，七段输出a~g的值分别等于（ ）。",options:["1011011","1011111","0100100","0100000"],answer:0,explanation:"输入0101=5，数字5在共阴极数码管中a~g=1011011。",images:["images/Q11_fig1.jpg","images/Q11_fig2.jpg"]},
   {id:12,type:"choice",chapter:"数制与编码",difficulty:2,question:"数字系统采用（ ）可以将减法运算转化为加法运算。",options:["原码","余3码","Gray码","补码"],answer:3,explanation:"补码：[A-B]补=[A]补+[-B]补，将减法统一为加法。"},
   {id:13,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"下列器件中，属于时序部件的是（ ）。",options:["计数器","译码器","加法器","多路选择器"],answer:0,explanation:"计数器有存储功能，输出取决于当前输入和过去状态，是时序逻辑。"},
   {id:14,type:"choice",chapter:"数制与编码",difficulty:2,question:"表示一个最大的3位十进制数，所需二进制数的位数至少是（ ）。",options:["6","8","10","12"],answer:2,explanation:"最大3位十进制数=999，2^9=512<999<2^10=1024，需10位。"},
@@ -1225,44 +1225,44 @@ const QUESTION_BANK_DIGITAL = [
   {id:23,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"Moore型时序逻辑电路的输出是（ ）。",options:["只与输入有关","只与电路当前的状态有关","与输入和电路当前状态均有关","与输入和电路当前状态均无关"],answer:1,explanation:"Moore型：输出仅取决于当前状态。Mealy型：取决于状态和输入。"},
   {id:24,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"一个8通道的数据分配器，有（ ）。",options:["1个数据输入，8个数据输出和3个地址输入","8个数据输入，1个数据输出和3个地址输入","3个数据输入，1个数据输出和8个地址输入","1个数据输入，3个数据输出和8个地址输入"],answer:0,explanation:"DEMUX将1路数据分配到8路输出，需3位地址(2^3=8)。"},
   {id:25,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"由74LS138译码器和逻辑门构成的电路，输入A,B,C和输出Z的逻辑函数最小项表达式为（ ）。",options:["Z=Σm(1,2,4,7)","Z=Σm(0,3,5,6)","Z=Σm(1,3,4,6)","Z=Σm(0,2,5,7)"],answer:0,explanation:"与非门输出Z=m1·m2·m4·m7，即Z=Σm(1,2,4,7)。"},
-  {id:26,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"某组合电路输入A,B,C和输出F的波形如图1-4所示，其函数表达式为（ ）。",options:["F=Σm(1,2,5,6)","F=Σm(0,3,4,7)","F=Σm(1,4,5,6)","F=Σm(0,2,3,7)"],answer:1,explanation:"根据波形图分析：F=Σm(0,3,4,7)。"},
+  {id:26,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"某组合电路输入A,B,C和输出F的波形如图1-4所示，其函数表达式为（ ）。",options:["F=Σm(1,2,5,6)","F=Σm(0,3,4,7)","F=Σm(1,4,5,6)","F=Σm(0,2,3,7)"],answer:1,explanation:"根据波形图分析：F=Σm(0,3,4,7)。",images:["images/Q26_fig1.jpg"]},
   {id:27,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"JK触发器在CP脉冲作用下，欲使Q^(n+1)=Q^n，则输入信号应为（ ）。",options:["J=K=0","J=1,K=0","J=0,K=Q","J=Q,K=1"],answer:0,explanation:"JK触发器：J=K=0时保持，J=K=1时翻转。"},
   {id:28,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"如图电路中若X=1,Q^n=0，则次态Q^(n+1)与输出Z为（ ）。",options:["Q^(n+1)=1,Z=0","Q^(n+1)=0,Z=0","Q^(n+1)=1,Z=1","Q^(n+1)=0,Z=1"],answer:2,explanation:"X=1时D=1，Q^(n+1)=1，Z=Q^(n+1)=1。"},
-  {id:29,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"对于边沿触发的D触发器，下面描述正确的是（ ）。",options:["状态改变只发生在时钟边沿","要进入的状态取决于D输入","输出跟随每个时钟脉冲的输入","以上答案均正确"],answer:3,explanation:"边沿D触发器：状态在时钟沿改变，次态=D，所有描述都正确。"},
+  {id:29,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"对于边沿触发的D触发器，下面描述正确的是（ ）。",options:["状态改变只发生在时钟边沿","要进入的状态取决于D输入","输出跟随每个时钟脉冲的输入","以上答案均正确"],answer:3,explanation:"边沿D触发器：状态在时钟沿改变，次态=D，所有描述都正确。",images:["images/Q29_fig1.jpg"]},
   {id:30,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"模5的计数器必须有（ ）触发器来实现。",options:["12个","4个","3个","5个"],answer:2,explanation:"2^2=4<5<2^3=8，至少需要3个触发器。"},
   {id:31,type:"choice",chapter:"MOS管与半导体",difficulty:2,question:"MOS管有3个电极，选项（ ）描述正确。",options:["基极","栅极","发射极","集电极"],answer:1,explanation:"MOS管三电极：栅极(G)、源极(S)、漏极(D)。BJT是基极/发射极/集电极。"},
-  {id:32,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"电路图如图。触发器当前状态Q2Q1Q0为110，在时钟作用下，下一状态为（ ）。",options:["101","010","110","111"],answer:3,explanation:"110→111。"},
-        {id:36,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"对于如图所示波形，其反映的逻辑关系是（ ）。",options:["与关系","异或关系","同或关系","无法判断"],answer:1,explanation:"输入不同输出为1，相同输出为0，是异或。"},
-        {id:40,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"共阳极七段LED数码管显示译码器，若要显示字符'5'，则译码器输出a~g应为（ ）。",options:["0100100","1100011","1011011","0011011"],answer:0,explanation:"共阳极：低电平点亮。显示'5'时a~g=0100100。"},
+  {id:32,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"电路图如图。触发器当前状态Q2Q1Q0为110，在时钟作用下，下一状态为（ ）。",options:["101","010","110","111"],answer:3,explanation:"110→111。",images:["images/Q32_fig1.jpg"]},
+        {id:36,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"对于如图所示波形，其反映的逻辑关系是（ ）。",options:["与关系","异或关系","同或关系","无法判断"],answer:1,explanation:"输入不同输出为1，相同输出为0，是异或。",images:["images/Q36_fig1.jpg"]},
+        {id:40,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"共阳极七段LED数码管显示译码器，若要显示字符'5'，则译码器输出a~g应为（ ）。",options:["0100100","1100011","1011011","0011011"],answer:0,explanation:"共阳极：低电平点亮。显示'5'时a~g=0100100。",images:["images/Q40_fig1.jpg"]},
     {id:42,type:"choice",chapter:"Verilog HDL",difficulty:3,question:"reg [7:0] A; A=2'hFF；最后A中的值是（ ）。",options:["8'b00000011","8'h03","8'b11111111","8'b11111111"],answer:0,explanation:"2'hFF=2位十六进制FF，A是8位，高位补0→8'b00000011。"},
     {id:44,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"假设JK触发器的现态为0，要求次态为0，则应使（ ）。",options:["J=X,K=0","J=0,K=X","J=1,K=X","J=K=1"],answer:1,explanation:"现态0→次态0：J=0即可(K任意)。"},
-  {id:45,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"下图为某计数器的时序图，判断该计数器为（ ）。",options:["十进制计数器","九进制计数器","四进制计数器","八进制计数器"],answer:0,explanation:"10个不同状态循环，是十进制计数器。"},
+  {id:45,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"下图为某计数器的时序图，判断该计数器为（ ）。",options:["十进制计数器","九进制计数器","四进制计数器","八进制计数器"],answer:0,explanation:"10个不同状态循环，是十进制计数器。",images:["images/Q45_fig1.jpg"]},
   {id:46,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"4位移位寄存器，现态Q3Q2Q1Q0为1100，经左移1位后次态为（ ）。",options:["0011或1011","1000或1001","1011或1110","0011或1111"],answer:1,explanation:"1100左移→100x。x=0→1000，x=1→1001。"},
-  {id:47,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"将D触发器改造成T触发器，虚线框应是（ ）。",options:["与关系","异或关系","同或关系","无法判断"],answer:1,explanation:"D=Q⊕T：T=0时D=Q(保持)，T=1时D=Q'(翻转)=T触发器。"},
-  {id:48,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"用4选1数据选择器实现函数，应使（ ）。",options:["D0=D2=0,D1=D3=1","D0=D2=1,D1=D3=0","D0=D1=0,D2=D3=1","D0=D1=1,D2=D3=0"],answer:0,explanation:"根据MUX输出表达式和函数真值表对照：D0=D2=0,D1=D3=1。"},
+  {id:47,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"将D触发器改造成T触发器，虚线框应是（ ）。",options:["与关系","异或关系","同或关系","无法判断"],answer:1,explanation:"D=Q⊕T：T=0时D=Q(保持)，T=1时D=Q'(翻转)=T触发器。",images:["images/Q47_fig1.jpg"]},
+  {id:48,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"用4选1数据选择器实现函数，应使（ ）。",options:["D0=D2=0,D1=D3=1","D0=D2=1,D1=D3=0","D0=D1=0,D2=D3=1","D0=D1=1,D2=D3=0"],answer:0,explanation:"根据MUX输出表达式和函数真值表对照：D0=D2=0,D1=D3=1。",images:["images/Q48_fig1.png"]},
   {id:49,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"基于两片74160级联设计17进制计数器，反馈状态是（ ）。",options:["00010000","00010001","00010110","00010111"],answer:2,explanation:"17进制反馈16的BCD=00010110。"},
     {id:51,type:"choice",chapter:"数制与编码",difficulty:1,question:"二进制数(100110)2对应的十进制数为（ ）。",options:["32","38","70","22"],answer:1,explanation:"100110₂=32+4+2=38。"},
   {id:52,type:"choice",chapter:"数制与编码",difficulty:1,question:"下列哪个信号不是数字信号（ ）。",options:["语音信号","电灯的状态","单项选择题的答案","算盘表示的数"],answer:0,explanation:"语音信号是连续的模拟量，其他都是离散的数字量。"},
   {id:53,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"逻辑函数F=ABC+A'BC+AB'C+ABC'化简结果为（ ）。",options:["A","BC","AB+BC+CA","ABC"],answer:2,explanation:"F=AB+BC+CA（三变量多数表决电路）。"},
-  {id:54,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"分析图示电路，Y的逻辑表达式为（ ）。",options:["Y=A+B","Y=A⊕B","Y=A⊙B","Y=A'+B"],answer:2,explanation:"Y=(A⊕B)'=A⊙B(同或)。"},
-  {id:55,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"已知组合逻辑电路输入A,B,C和输出F的波形，F表达式为（ ）。",options:["ABC'+A'BC+AB'C","A'B'C+ABC'+AB'C","ABC+A'BC'+AB'C'","ABC'+A'BC+AB'C'"],answer:0,explanation:"波形图：F在ABC=110,011,101时=1，即F=Σm(3,5,6)。"},
-  {id:56,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"当CLK=1,S=1,R=1时，与非门构成的SR触发器输出为（ ）。",options:["Q=1,Q'=0","Q=0,Q'=0","Q=0,Q'=1","Q=1,Q'=1"],answer:3,explanation:"S=R=1时SR锁存器无效状态，Q=Q'=1（与非门构成）。"},
+  {id:54,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"分析图示电路，Y的逻辑表达式为（ ）。",options:["Y=A+B","Y=A⊕B","Y=A⊙B","Y=A'+B"],answer:2,explanation:"Y=(A⊕B)'=A⊙B(同或)。",images:["images/Q54_fig1.jpg"]},
+  {id:55,type:"choice",chapter:"组合逻辑电路",difficulty:3,question:"已知组合逻辑电路输入A,B,C和输出F的波形，F表达式为（ ）。",options:["ABC'+A'BC+AB'C","A'B'C+ABC'+AB'C","ABC+A'BC'+AB'C'","ABC'+A'BC+AB'C'"],answer:0,explanation:"波形图：F在ABC=110,011,101时=1，即F=Σm(3,5,6)。",images:["images/Q55_fig1.jpg"]},
+  {id:56,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"当CLK=1,S=1,R=1时，与非门构成的SR触发器输出为（ ）。",options:["Q=1,Q'=0","Q=0,Q'=0","Q=0,Q'=1","Q=1,Q'=1"],answer:3,explanation:"S=R=1时SR锁存器无效状态，Q=Q'=1（与非门构成）。",images:["images/Q56_fig1.jpg"]},
   {id:57,type:"choice",chapter:"Verilog HDL",difficulty:2,question:"Verilog中，下列哪个不是分支语句（ ）。",options:["if-else","case","casez","repeat"],answer:3,explanation:"repeat是循环语句，if-else/case/casez是分支语句。"},
   {id:58,type:"choice",chapter:"Verilog HDL",difficulty:1,question:"以下哪个操作符用于Verilog中按位与操作（ ）。",options:["&","&&","|","||"],answer:0,explanation:"&按位与，&&逻辑与，|按位或，||逻辑或。"},
-  {id:59,type:"choice",chapter:"组合逻辑电路",difficulty:2,question:"共阳极七段LED显示译码器，显示字符'1'时输出a~g应为（ ）。",options:["1001111","1100011","1011011","0011011"],answer:0,explanation:"共阳极显示'1'：b,c亮(低)，a~g=1001111。"},
+  {id:59,type:"choice",chapter:"组合逻辑电路",difficulty:2,question:"共阳极七段LED显示译码器，显示字符'1'时输出a~g应为（ ）。",options:["1001111","1100011","1011011","0011011"],answer:0,explanation:"共阳极显示'1'：b,c亮(低)，a~g=1001111。",images:["images/Q59_fig1.jpg"]},
   {id:60,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"有一T触发器，当T=1时，加上脉冲时钟，则触发器（ ）。",options:["保持原态","置0","置1","翻转"],answer:3,explanation:"T触发器：T=0保持，T=1翻转。"},
   {id:61,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"同步时序电路和异步时序电路比较，差异在于后者（ ）。",options:["没有触发器","没有统一的时钟脉冲控制","没有稳定的状态","输出只与内部状态有关"],answer:1,explanation:"异步时序电路没有统一时钟，各触发器各自触发。"},
-    {id:63,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"如图所示电路，有任意初始状态，电路能否自启动（ ）。",options:["条件不足","能实现自启动","不能实现自启动","有时可以有时不可以"],answer:1,explanation:"所有无效状态都能回到有效循环，能自启动。"},
+    {id:63,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"如图所示电路，有任意初始状态，电路能否自启动（ ）。",options:["条件不足","能实现自启动","不能实现自启动","有时可以有时不可以"],answer:1,explanation:"所有无效状态都能回到有效循环，能自启动。",images:["images/Q63_fig1.jpg"]},
   {id:64,type:"choice",chapter:"组合逻辑电路",difficulty:2,question:"74LS138译码时，输入A2A1A0=001，输出Y7~Y0为（ ）。",options:["00010010","00001111","11111111","11111101"],answer:3,explanation:"74LS138输出低有效。001→Y1=0，其余=1→11111101。"},
   {id:65,type:"choice",chapter:"触发器与时序逻辑",difficulty:2,question:"设计一个能存放8位二进制代码的寄存器，需要的触发器级数是（ ）。",options:["8","16","3","2"],answer:0,explanation:"每位二进制代码需1个触发器，8位需8个。"},
   {id:66,type:"choice",chapter:"Verilog HDL",difficulty:3,question:"assign addr[3:0]=-3；addr被赋予的值是（ ）。",options:["4'bxx11","4'bzz11","4'b0011","4'b1101"],answer:3,explanation:"-3的补码：3=0011，取反+1=1101。"},
     {id:68,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"4位移位寄存器，现态1100，左移1位后次态为（ ）。",options:["0011或1011","1000或1001","1011或1110","0011或1111"],answer:1,explanation:"1100左移→100x。取决于串行输入。"},
-  {id:69,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"下图电路的模长M为（ ）。",options:["5","6","7","8"],answer:1,explanation:"有效状态循环共6个，M=6。"},
+  {id:69,type:"choice",chapter:"触发器与时序逻辑",difficulty:3,question:"下图电路的模长M为（ ）。",options:["5","6","7","8"],answer:1,explanation:"有效状态循环共6个，M=6。",images:["images/Q69_fig1.jpg"]},
   {id:70,type:"choice",chapter:"逻辑门与布尔代数",difficulty:2,question:"函数F(A,B,C)=AB+BC+AC的最小项表达式为（ ）。",options:["Σm(0,2,3,4)","Σm(0,2,4)","Σm(3,5,6,7)","Σm(0,2,3,5)"],answer:2,explanation:"AB+BC+AC=Σm(3,5,6,7)，三变量多数表决。"},
 
   // FILL questions (8 total)
   {id:201,type:"fill",chapter:"数制与编码",difficulty:2,question:"[X]原=1.1101，真值X=（___），[X]补=（___）。",blanks:["-0.1101","1.0011"],explanation:"负数原码：符号位1表示负，数值位1101对应0.1101，X=-0.1101。补码=反码+1=1.0010+1=1.0011。"},
-  {id:202,type:"fill",chapter:"逻辑门与布尔代数",difficulty:3,question:"逻辑函数F=[(AB+C)D+E]B的对偶式（___）和反演式（___）。",blanks:["F*=[(A+B)C+D]+E+B","F'=[(A'+B')C'+D']E'+B'"],explanation:"对偶式：·⇔+、常数取反。反演式：所有变量取反+对偶变换。"},
+  {id:202,type:"fill",chapter:"逻辑门与布尔代数",difficulty:3,question:"逻辑函数F=[(AB+C)D+E]B的对偶式（___）和反演式（___）。",blanks:["F*=[(A+B)C+D]+E+B","F'=[(A'+B')C'+D']E'+B'"],explanation:"对偶式：·⇔+、常数取反。反演式：所有变量取反+对偶变换。",images:["images/Q202_fig1.jpg","images/Q202_fig2.jpg"]},
   {id:203,type:"fill",chapter:"Verilog HDL",difficulty:2,question:"若A=5'b11001，&A的运算结果为（___），^A的运算结果为（___）。",blanks:["0","1"],explanation:"&A(缩减与)=1&1&0&0&1=0。^A(缩减异或)=1^1^0^0^1=1。"},
   {id:204,type:"fill",chapter:"触发器与时序逻辑",difficulty:2,question:"由4位触发器组成的（___）位二进制加法计数器有（___）个有效计数状态，最大计数值为（___）。",blanks:["4","16","15"],explanation:"4位二进制计数器：2^4=16个状态(0~15)，最大计数值15。"},
   {id:205,type:"fill",chapter:"MOS管与半导体",difficulty:1,question:"逻辑门电路的扇入系数是（___）。",blanks:["逻辑门允许的输入端数目"],explanation:"扇入系数=一个逻辑门允许的最大输入端子数量。"},
@@ -1278,16 +1278,16 @@ const QUESTION_BANK_DIGITAL = [
 
   // COMPREHENSIVE questions (5 total)
   {id:401,type:"comprehensive",chapter:"逻辑门与布尔代数",difficulty:4,question:"用卡诺图化简 F(A,B,C,D)=Σm(0,13,14,15)+Σd(1,2,3,9,10,11)。",steps:["画出4变量卡诺图","填入最小项和无关项","圈出最大质蕴含项","写出最简与或表达式"],answer:"F=A'B'C'D'+ABC",explanation:"利用无关项d(1,2,3,9,10,11)扩大卡诺圈。m0单独→A'B'C'D'；m13,m14,m15+d9,d10,d11→ABC。"},
-  {id:402,type:"comprehensive",chapter:"组合逻辑电路",difficulty:4,question:"已知三变量逻辑函数F=AB+BC+AC，列出真值表，写出最小项表达式，并用74LS138实现。",steps:["列出A,B,C真值表","找F=1行的最小项","写最小项表达式","画74LS138连接图"],answer:"F=Σm(3,5,6,7)",explanation:"74LS138是3-8译码器(输出低有效)，用与非门将m3,m5,m6,m7的输出相与非实现F。"},
-  {id:403,type:"comprehensive",chapter:"触发器与时序逻辑",difficulty:4,question:"时序逻辑电路如图4-2所示。分析电路功能，写出驱动方程和状态方程，列出状态转换表，说明功能，判断自启动。",steps:["驱动方程：D0=Q1,D1=Q2,D2=Q0⊕Q2","状态方程","状态转换表","状态转换图","判断功能与自启动"],answer:"七进制计数器，不能自启动",explanation:"Q0^(n+1)=Q1,Q1^(n+1)=Q2,Q2^(n+1)=Q0⊕Q2。7个有效状态，1个无效状态不能回有效循环。"},
-  {id:404,type:"comprehensive",chapter:"组合逻辑电路",difficulty:4,question:"由74LS153双4选1MUX组成的电路。(1)写出F的最小项表达式；(2)改用8选1实现F，画出逻辑电路。",steps:["A=0时分析1号MUX","A=1时分析2号MUX","合并得F表达式","设计8选1方案"],answer:"F=Σm(2,5,6,7,8,10,11,12,14,15)",explanation:"分情况分析后合并所有最小项。"},
-  {id:405,type:"comprehensive",chapter:"触发器与时序逻辑",difficulty:4,question:"设计一个同步5进制加法计数器。",steps:["设定5个内部状态S0~S4","建立状态图","状态分配(S0=000,S1=001,S2=010,S3=011,S4=100)","画状态表求方程式","画电路图"],answer:"使用3个触发器，按标准步骤设计",explanation:"5进制需3个触发器(2^3=8≥5)。状态从000递增到100后回000。"},
+  {id:402,type:"comprehensive",chapter:"组合逻辑电路",difficulty:4,question:"已知三变量逻辑函数F=AB+BC+AC，列出真值表，写出最小项表达式，并用74LS138实现。",steps:["列出A,B,C真值表","找F=1行的最小项","写最小项表达式","画74LS138连接图"],answer:"F=Σm(3,5,6,7)",explanation:"74LS138是3-8译码器(输出低有效)，用与非门将m3,m5,m6,m7的输出相与非实现F。",images:["images/Q402_fig1.png","images/Q402_fig2.png","images/Q402_fig3.jpg","images/Q402_fig4.png","images/Q402_fig5.jpg"]},
+  {id:403,type:"comprehensive",chapter:"触发器与时序逻辑",difficulty:4,question:"时序逻辑电路如图4-2所示。分析电路功能，写出驱动方程和状态方程，列出状态转换表，说明功能，判断自启动。",steps:["驱动方程：D0=Q1,D1=Q2,D2=Q0⊕Q2","状态方程","状态转换表","状态转换图","判断功能与自启动"],answer:"七进制计数器，不能自启动",explanation:"Q0^(n+1)=Q1,Q1^(n+1)=Q2,Q2^(n+1)=Q0⊕Q2。7个有效状态，1个无效状态不能回有效循环。",images:["images/Q403_fig1.png","images/Q403_fig2.jpg","images/Q403_fig3.jpg"]},
+  {id:404,type:"comprehensive",chapter:"组合逻辑电路",difficulty:4,question:"由74LS153双4选1MUX组成的电路。(1)写出F的最小项表达式；(2)改用8选1实现F，画出逻辑电路。",steps:["A=0时分析1号MUX","A=1时分析2号MUX","合并得F表达式","设计8选1方案"],answer:"F=Σm(2,5,6,7,8,10,11,12,14,15)",explanation:"分情况分析后合并所有最小项。",images:["images/Q404_fig1.jpg","images/Q404_fig2.jpg","images/Q404_fig3.jpg"]},
+  {id:405,type:"comprehensive",chapter:"触发器与时序逻辑",difficulty:4,question:"设计一个同步5进制加法计数器。",steps:["设定5个内部状态S0~S4","建立状态图","状态分配(S0=000,S1=001,S2=010,S3=011,S4=100)","画状态表求方程式","画电路图"],answer:"使用3个触发器，按标准步骤设计",explanation:"5进制需3个触发器(2^3=8≥5)。状态从000递增到100后回000。",images:["images/Q405_fig1.png","images/Q405_fig2.png","images/Q405_fig3.jpg","images/Q405_fig4.jpg","images/Q405_fig5.jpg","images/Q405_fig6.jpg"]},
 
   // CODE questions (4 total)
   {id:501,type:"code",chapter:"Verilog HDL",difficulty:4,question:"用Verilog HDL设计一个具有异步置位、异步复位的负边沿JK触发器。",reference:"module JKFF(clk,reset,set,j,k,q,n_q);\ninput clk,reset,set,j,k;\noutput q,n_q;\nreg q;\nassign n_q=~q;\nalways @(negedge clk or negedge reset or negedge set) begin\n  if(!reset) q<=0;\n  else if(!set) q<=1;\n  else case({j,k})\n    2'b00:q<=q;\n    2'b01:q<=0;\n    2'b10:q<=1;\n    2'b11:q<=~q;\n  endcase\nend\nendmodule",keywords:["异步置位","异步复位","负边沿","JK触发器"]},
-  {id:502,type:"code",chapter:"Verilog HDL",difficulty:3,question:"请用门级、行为级语句描述一个半加器电路。",reference:"门级:\nmodule menji(A,B,Sum,Carry);\ninput A,B; output Sum,Carry;\nxor X1(Sum,A,B); and A1(Carry,A,B);\nendmodule\n\n行为级:\nmodule xingweiji(A,B,Sum,Carry);\ninput A,B; output reg Sum,Carry;\nalways@(A or B) begin Sum=A^B; Carry=A&B; end\nendmodule",keywords:["门级","行为级","半加器","xor"]},
+  {id:502,type:"code",chapter:"Verilog HDL",difficulty:3,question:"请用门级、行为级语句描述一个半加器电路。",reference:"门级:\nmodule menji(A,B,Sum,Carry);\ninput A,B; output Sum,Carry;\nxor X1(Sum,A,B); and A1(Carry,A,B);\nendmodule\n\n行为级:\nmodule xingweiji(A,B,Sum,Carry);\ninput A,B; output reg Sum,Carry;\nalways@(A or B) begin Sum=A^B; Carry=A&B; end\nendmodule",keywords:["门级","行为级","半加器","xor"],images:["images/Q502_fig1.jpg"]},
   {id:503,type:"code",chapter:"Verilog HDL",difficulty:4,question:"试用Verilog HDL设计一个13进制计数器。",reference:"module counter_13(input clk, input reset, output reg[3:0] counter);\nalways @(posedge clk or posedge reset) begin\n  if(reset) counter<=4'b0;\n  else if(counter==4'b1100) counter<=4'b0;\n  else counter<=counter+1;\nend\nendmodule",keywords:["13进制","计数器","Verilog","posedge"]},
-  {id:504,type:"code",chapter:"Verilog HDL",difficulty:3,question:"试用Verilog HDL分别编写门级、数据流描述与行为描述的MUX2模块。",reference:"门级: module MUX2(input a,b,sel,output out); wire and1,and2,sel_not; and(and1,a,sel_not); and(and2,b,sel); not(sel_not,sel); or(out,and1,and2); endmodule\n\n数据流: module MUX2(input a,b,sel,output out); assign out=(a&~sel)|(b&sel); endmodule\n\n行为级: module MUX2(input a,b,sel,output reg out); always @(*) begin if(!sel) out=a; else out=b; end endmodule",keywords:["MUX2","门级","数据流","行为级"]}
+  {id:504,type:"code",chapter:"Verilog HDL",difficulty:3,question:"试用Verilog HDL分别编写门级、数据流描述与行为描述的MUX2模块。",reference:"门级: module MUX2(input a,b,sel,output out); wire and1,and2,sel_not; and(and1,a,sel_not); and(and2,b,sel); not(sel_not,sel); or(out,and1,and2); endmodule\n\n数据流: module MUX2(input a,b,sel,output out); assign out=(a&~sel)|(b&sel); endmodule\n\n行为级: module MUX2(input a,b,sel,output reg out); always @(*) begin if(!sel) out=a; else out=b; end endmodule",keywords:["MUX2","门级","数据流","行为级"],images:["images/Q504_fig1.jpg"]}
 ];
 
 const QUESTION_BANK_LINEAR = [
@@ -2520,6 +2520,15 @@ function renderQuestion(session) {
       <span style="color:var(--text-muted);font-size:0.8rem;margin-left:8px;">${getTypeLabel(q.type)}</span>
       <div class="q-text">${q.id}. ${q.question}</div>
     </div>`;
+
+  // Render question images
+  if (q.images && q.images.length > 0) {
+    html += `<div class="question-images">`;
+    q.images.forEach(img => {
+      html += `<img src="${img}" alt="题目图片" style="max-width:100%;height:auto;margin:8px 0;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#fff;">`;
+    });
+    html += `</div>`;
+  }
 
   // Render based on type
   switch(q.type) {
